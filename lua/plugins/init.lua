@@ -36,6 +36,7 @@ local plugins = {
 	{
 		"williamboman/mason.nvim",
 		lazy = true,
+		event = { "BufReadPre", "BufNewFile" },
 		cmd = { "Mason", "MasonInstall", "MasonInstallAll", "MasonUpdate" },
 		opts = function()
 			return require("plugins.configs.mason")
@@ -189,6 +190,7 @@ local plugins = {
 	{
 		"neovim/nvim-lspconfig",
 		lazy = true,
+		event = { "BufReadPre", "BufNewFile" },
 		config = function()
 			require("plugins.configs.lspconfig")
 		end,
@@ -260,6 +262,7 @@ local plugins = {
 
 		"williamboman/mason-lspconfig.nvim",
 		lazy = true,
+		event = { "BufReadPre", "BufNewFile" },
 		dependencies = {
 			"williamboman/mason.nvim",
 			"neovim/nvim-lspconfig",
