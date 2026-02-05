@@ -28,8 +28,7 @@ end
 
 local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")
 
-local workspace_dir = vim.fn.stdpath("data")
-                     .. "/site/java/workspace-root/" .. project_name
+local workspace_dir = vim.fn.stdpath("data") .. "/site/java/workspace-root/" .. project_name
 vim.fn.mkdir(workspace_dir, "p")
 
 
@@ -124,7 +123,7 @@ local config = {
 				"org",
 			},
 		},
-		extendedClientCapabilities = extendedClientCapabilities,
+		extendedClientCapabilities = jdtls.extendedClientCapabilities,
 		sources = {
 			organizeImports = {
 				starThreshold = 9999,
@@ -147,8 +146,13 @@ local config = {
 	},
 }
 
-config["on_attach"] = function(client, bufnr)
-	require("lsp_signature").on_attach({
+config["on_attach"] = function(_, bufnr)
+	local ok, lsp_signature = pcall(require, "lsp_signature")
+	if not ok then
+		return
+	end
+
+	lsp_signature.on_attach({
 		bind = true,
 		floating_window_above_cur_line = false,
 		padding = "",
@@ -161,4 +165,3 @@ local capabilities = vim.lsp.protocol.make_client_capabilities()
 config.capabilities = capabilities
 
 require("jdtls").start_or_attach(config)
-

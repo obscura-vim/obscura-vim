@@ -1,7 +1,18 @@
 local M = {}
 
-local servers =
-	{ "html", "cssls", "ts_ls", "clangd", "pyright", "lua_ls", "rust_analyzer", "eslint", "gopls", "sqlls", "texlab" }
+local servers = {
+	"html",
+	"cssls",
+	"tsserver",
+	"clangd",
+	"pyright",
+	"lua_ls",
+	"rust_analyzer",
+	"eslint",
+	"gopls",
+	"sqlls",
+	"texlab",
+}
 
 M.on_attach = function(client, bufnr)
 	client.server_capabilities.documentFormattingProvider = false
