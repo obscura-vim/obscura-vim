@@ -4,7 +4,7 @@ local plugins = {
 	"nvim-lua/plenary.nvim",
 	{
 		"nvim-treesitter/nvim-treesitter",
-		lazy = true,
+		lazy = false,
 		build = ":TSUpdate",
 		config = function(_, opts)
 			require("plugins.configs.treesitter")

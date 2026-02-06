@@ -1,40 +1,60 @@
-require("nvim-treesitter.install").prefer_git = true
+local ts = require("nvim-treesitter")
 
-require("nvim-treesitter").setup({
-	ensure_installed = {
-		"lua",
-		"vim",
-		"bash",
-		"python",
-		"go",
-		"rust",
-		"javascript",
-		"typescript",
-		"json",
-		"yaml",
-		"toml",
-		"markdown",
-		"markdown_inline",
-		"latex",
-		"c",
-		"cpp",
-		"html",
-		"css",
-		"java",
-	},
-	sync_install = false,
-	auto_install = true,
-	highlight = {
-		enable = true,
-		additional_vim_regex_highlighting = false,
-	},
-	indent = {
-		enable = true,
-	},
-	playground = {
-		enable = true,
-		disable = {},
-		updatetime = 25,
-		persist_queries = false,
-	},
+ts.install({
+	-- languages
+	"bash",
+	"c",
+	"clojure",
+	"fennel",
+	"go",
+	"gomod",
+	"gosum",
+	"groovy",
+	"java",
+	"javadoc",
+	"javascript",
+	"kotlin",
+	"lua",
+	"luadoc",
+	"make",
+	"proto",
+	"python",
+	"rust",
+	"scheme",
+	"sql",
+	"tsx",
+	"typescript",
+	"vim",
+	"vimdoc",
+	-- markup
+	"css",
+	"html",
+	"markdown",
+	"markdown_inline",
+	"xml",
+	"asm",
+	-- config
+	"dot",
+	"toml",
+	"yaml",
+	-- data
+	"csv",
+	"json",
+	"json5",
+	-- utility
+	"diff",
+	"disassembly",
+	"dockerfile",
+	"git_config",
+	"git_rebase",
+	"gitcommit",
+	"gitignore",
+	"http",
+	"mermaid",
+	"printf",
+	"query",
+	"ssh_config",
 })
+
+vim.treesitter.language.register("javascript", "tsx")
+vim.treesitter.language.register("typescript.tsc", "tsx")
