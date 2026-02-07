@@ -65,7 +65,7 @@ local plugins = {
 	},
 	{
 		"saghen/blink.cmp",
-		lazy = true,
+		lazy = false,
 		version = "1.*",
 		event = "InsertEnter",
 		dependencies = {
