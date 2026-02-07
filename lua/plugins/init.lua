@@ -144,12 +144,6 @@ local plugins = {
 		end,
 	},
 	{
-		"windwp/nvim-autopairs",
-		lazy = true,
-		event = "InsertEnter",
-		opts = {},
-	},
-	{
 		"nvim-telescope/telescope.nvim",
 		lazy = true,
 		dependencies = {
