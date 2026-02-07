@@ -27,8 +27,6 @@ map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "Copy whole file" })
 
 map("n", "<C-p>", "<cmd>let @+=expand('%:p')<CR>", { desc = "Copy absolute path of current file" })
 
-map("n", "<leader>i", "<cmd>IBLToggle<CR>", { desc = "Toggle indent blankline" })
-
 map("n", "<leader>n", "<cmd>set nu!<CR>", { desc = "Toggle line number" })
 map("n", "<leader>rn", "<cmd>set rnu!<CR>", { desc = "Toggle relative number" })
 
@@ -71,13 +69,13 @@ map("t", "<Esc>", vim.api.nvim_replace_termcodes("<C-\\><C-N>", true, true, true
 map("v", "<", "<gv", { desc = "Indent line" })
 map("v", ">", ">gv", { desc = "Indent line" })
 
-map("n", "<leader>/", function()
+map("n", ",c", function()
 	require("Comment.api").toggle.linewise.current()
 end, { desc = "Toggle comment" })
 
 map(
 	"v",
-	"<leader>/",
+	",c",
 	"<ESC><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>",
 	{ desc = "Toggle comment" }
 )
@@ -129,9 +127,9 @@ end, { desc = "Rename with rgr" })
 
 map("n", "<C-e>", "<cmd>Oil<CR>", { desc = "Open oil file manager" })
 
-map("n", "<leader>ff", "<cmd>Telescope find_files<CR>", { desc = "Find files" })
+map("n", ",ff", "<cmd>Telescope find_files<CR>", { desc = "Find files" })
 
-map("n", "<leader>fF", function()
+map("n", ",fF", function()
 	require("telescope.builtin").find_files({
 		no_ignore = true,
 		hidden = true,
@@ -139,9 +137,9 @@ map("n", "<leader>fF", function()
 	})
 end, { desc = "Find all files" })
 
-map("n", "<leader>fw", "<cmd>Telescope live_grep<CR>", { desc = "Live grep" })
+map("n", ",fw", "<cmd>Telescope live_grep<CR>", { desc = "Live grep" })
 
-map("n", "<leader>fW", function()
+map("n", ",fW", function()
 	require("telescope.builtin").live_grep({
 		additional_args = function(_)
 			return { "--hidden", "--no-ignore", "-L" }
@@ -157,13 +155,13 @@ map("n", "<Tab>", function()
 	require("telescope.builtin").buffers({ buf_ids = bufs, sort_lastused = true })
 end, { desc = "Find buffers" })
 
-map("n", "<leader>fo", "<cmd>Telescope oldfiles<CR>", { desc = "Find oldfiles" })
-map("n", "<leader>fz", "<cmd>Telescope current_buffer_fuzzy_find<CR>", { desc = "Find in current buffer" })
+map("n", ",fo", "<cmd>Telescope oldfiles<CR>", { desc = "Find oldfiles" })
+map("n", ",fz", "<cmd>Telescope current_buffer_fuzzy_find<CR>", { desc = "Find in current buffer" })
 
-map("n", "<leader>cm", "<cmd>Telescope git_commits<CR>", { desc = "Git commits" })
-map("n", "<leader>gt", "<cmd>Telescope git_status<CR>", { desc = "Git status" })
+map("n", ",fc", "<cmd>Telescope git_commits<CR>", { desc = "Git commits" })
+map("n", ",fg", "<cmd>Telescope git_status<CR>", { desc = "Git status" })
 
-map("n", "<leader>ma", "<cmd>Telescope marks<CR>", { desc = "telescope bookmarks" })
+map("n", ",fm", "<cmd>Telescope marks<CR>", { desc = "telescope bookmarks" })
 
 map("n", "<A-j>", "<cmd>CoqNext<CR>", { desc = "Next coq line", noremap = true, silent = true })
 map("n", "<F-k>", "<cmd>CoqUndo<CR>", { desc = "Prev coq line", noremap = true, silent = true })
@@ -216,7 +214,7 @@ M.colorizer = {
 
 M.ibl = {
 	["<leader>i"] = function()
-		local loaded, ibl = pcall(require, "ibl")
+		local loaded, _ = pcall(require, "ibl")
 		if not loaded then
 			vim.notify("Failed to load indent-blankline.nvim", vim.log.levels.WARN)
 			return
@@ -257,7 +255,7 @@ M.gitsigns = {
 			vim.g.gitsigns_loaded = true
 		else
 			local gitsigns = require("gitsigns")
-			local buf = vim.api.nvim_get_current_buf()
+			local _ = vim.api.nvim_get_current_buf()
 			local active = gitsigns.toggle_signs()
 			vim.notify("Gitsigns " .. (active and "enabled" or "disabled"))
 		end
