@@ -10,7 +10,6 @@ local plugins = {
 			require("plugins.configs.treesitter")
 		end,
 	},
-
 	{
 		"lukas-reineke/indent-blankline.nvim",
 		main = "ibl",
@@ -335,6 +334,14 @@ local plugins = {
 				end,
 				desc = "Flash",
 			},
+		},
+	},
+    {
+		"lewis6991/gitsigns.nvim",
+		lazy = true,
+		module = true,
+		keys = {
+			{ "<leader>g", map.gitsigns["<leader>g"], desc = "Toggle Git signs" },
 		},
 	},
 }

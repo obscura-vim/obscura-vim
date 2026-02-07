@@ -225,4 +225,43 @@ M.ibl = {
 	end,
 }
 
+M.gitsigns = {
+	["<leader>g"] = function()
+		if not vim.g.gitsigns_loaded then
+			local loaded, gitsigns = pcall(require, "gitsigns")
+			if not loaded then
+				vim.notify("Failed to load gitsigns.nvim", vim.log.levels.WARN)
+				return
+			end
+
+			gitsigns.setup({
+				signs = {
+					add = { text = "▎" },
+					change = { text = "▎" },
+					delete = { text = "▎" },
+					topdelete = { text = "▎" },
+					changedelete = { text = "▎" },
+				},
+				signcolumn = true,
+				numhl = false,
+				linehl = false,
+				current_line_blame = false,
+				word_diff = false,
+				watch_gitdir = {
+					interval = 1000,
+					follow_files = true,
+				},
+				update_debounce = 200,
+			})
+
+			vim.g.gitsigns_loaded = true
+		else
+			local gitsigns = require("gitsigns")
+			local buf = vim.api.nvim_get_current_buf()
+			local active = gitsigns.toggle_signs()
+			vim.notify("Gitsigns " .. (active and "enabled" or "disabled"))
+		end
+	end,
+}
+
 return M
