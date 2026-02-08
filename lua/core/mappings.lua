@@ -3,10 +3,6 @@ local map = vim.keymap.set
 map("i", "<C-a>", "<ESC>^i", { desc = "Beginning of line" })
 map("i", "<C-e>", "<End>", { desc = "End of line" })
 
-map("i", "(", "()<Left>")
-map("i", "[", "[]<Left>")
-map("i", "{", "{}<Left>")
-
 map("n", "'", "`", { noremap = true })
 map("n", "`", "'", { noremap = true })
 
