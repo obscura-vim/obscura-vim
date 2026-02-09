@@ -38,6 +38,8 @@ map("n", "<leader>b", "<cmd>VimtexCompile<CR>", { desc = "Build latex doc" })
 
 map("n", "<leader>m", "<cmd>MarkdownPreviewToggle<CR>", { desc = "Preview markdown document in Github style" })
 
+map("n", "<leader>p", "<cmd>PencilHard<CR>", { desc = "Turn on pencil hard mode for writing" })
+
 map("n", "<leader>v", "<cmd>VimtexView<CR>", { desc = "View place in latex doc" })
 
 map("n", "<leader>w", "<cmd>w<CR>", { desc = "Save" })
