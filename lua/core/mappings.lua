@@ -36,7 +36,7 @@ end, { desc = "Format code with Conform" })
 
 map("n", "<leader>b", "<cmd>VimtexCompile<CR>", { desc = "Build latex doc" })
 
-map("n", "<leader>m", "<cmd>MarkdownPreviewToggle<CR>", { desc = "Preview markdown document in Github style" })
+map("n", "<leader>m", "<cmd>MarkdownPreview<CR>", { desc = "Preview markdown document in Github style" })
 
 map("n", "<leader>p", function()
 	local buf = vim.api.nvim_get_current_buf()

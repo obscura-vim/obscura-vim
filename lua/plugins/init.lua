@@ -244,24 +244,6 @@ local plugins = {
 		},
 	},
 	{
-		"iamcco/markdown-preview.nvim",
-		lazy = true,
-		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-		build = "cd app && npm install",
-		init = function()
-			vim.g.mkdp_filetypes = { "markdown" }
-		end,
-		ft = { "markdown" },
-		config = function()
-			vim.g.mkdp_browserfunc = "OpenMarkdownPreview"
-			vim.cmd([[
-                function OpenMarkdownPreview(url)
-                  execute "silent ! google-chrome-stable --new-window --app=" . a:url
-                endfunction
-              ]])
-		end,
-	},
-	{
 		"lervag/vimtex",
 		lazy = true,
 		config = function()
@@ -329,7 +311,13 @@ local plugins = {
 		version = "*",
 		dependencies = { "nvim-treesitter/nvim-treesitter" },
 		config = function()
-			vim.cmd("colorscheme moss")
+			vim.g.last_theme = vim.fn.stdpath("data") .. "/last_theme.txt"
+
+			if vim.fn.filereadable(vim.g.last_theme) == 1 then
+				local theme = vim.fn.readfile(vim.g.last_theme)[1]
+				vim.o.background = theme
+				vim.cmd("colorscheme moss")
+			end
 		end,
 	},
 	{
