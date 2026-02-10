@@ -403,4 +403,10 @@ local plugins = {
 	},
 }
 
-require("lazy").setup(plugins)
+require("lazy").setup({
+	spec = plugins,
+
+	ui = {
+		border = "rounded",
+	},
+})
