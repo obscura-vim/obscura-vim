@@ -55,3 +55,44 @@ for _, provider in ipairs({ "node", "perl", "python3", "ruby" }) do
 end
 
 vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin" .. (is_windows and ";" or ":") .. vim.env.PATH
+
+local function in_markdown_yaml()
+	if vim.bo.filetype ~= "markdown" then
+		return false
+	end
+
+	local cur = vim.fn.line(".")
+
+	if vim.fn.getline(1) ~= "---" then
+		return false
+	end
+
+	for i = 2, vim.fn.line("$") do
+		if vim.fn.getline(i) == "---" then
+			return cur > 1 and cur < i
+		end
+	end
+
+	return false
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "markdown",
+	callback = function()
+		vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+			buffer = 0,
+			callback = function()
+				if in_markdown_yaml() then
+					vim.bo.shiftwidth = 2
+					vim.bo.tabstop = 2
+					vim.bo.softtabstop = 2
+					vim.bo.expandtab = true
+				else
+					vim.bo.shiftwidth = 4
+					vim.bo.tabstop = 4
+					vim.bo.softtabstop = 4
+				end
+			end,
+		})
+	end,
+})
