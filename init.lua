@@ -16,3 +16,5 @@ if vim.fn.filereadable(vim.g.last_theme) == 1 then
     vim.o.background = theme
     vim.cmd("colorscheme moss")
 end
+
+require("snippets")

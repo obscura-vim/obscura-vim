@@ -29,7 +29,6 @@ ls.add_snippets("tex", {
 	}),
 })
 
-
 ls.add_snippets("tex", {
 	s("an", {
 		t({ "\\begin{align}", "\t" }),
@@ -37,7 +36,6 @@ ls.add_snippets("tex", {
 		t({ "", "\\end{align}" }),
 	}),
 })
-
 
 ls.add_snippets("tex", {
 	s("a", {
@@ -58,51 +56,51 @@ ls.add_snippets("tex", {
 ls.add_snippets("tex", {
 	s("div", {
 		t("\\ \\vdots \\ "),
-        i(1)
+		i(1),
 	}),
 })
 
 ls.add_snippets("tex", {
 	s(">=", {
 		t("\\geqslant "),
-        i(1)
+		i(1),
 	}),
 })
 
 ls.add_snippets("tex", {
 	s("<=", {
 		t("\\eqslantless "),
-        i(1)
+		i(1),
 	}),
 })
 
 ls.add_snippets("tex", {
 	s("<=>", {
 		t("\\Leftrightarrow "),
-        i(1)
+		i(1),
 	}),
 })
 
 ls.add_snippets("tex", {
 	s("->", {
 		t("\\longrightarrow "),
-        i(1)
+		i(1),
 	}),
 })
 
 ls.add_snippets("tex", {
 	s("<-", {
 		t("\\longleftarrow "),
-        i(1)
+		i(1),
 	}),
 })
 
 ls.add_snippets("tex", {
-    s("bf", {
-            t("\\textbf{"),
-            i(1), 
-            t("}")
-        }),
+	s("bf", {
+		t("\\textbf{"),
+		i(1),
+		t("}"),
+	}),
 })
 
 ls.add_snippets("tex", {
@@ -121,28 +119,25 @@ ls.add_snippets("tex", {
 	}),
 })
 
-
 ls.add_snippets("tex", {
 	s("lim", {
 		t("\\lim\\limits_{"),
-        i(1),
+		i(1),
 		t(" \\to "),
-        i(2),
+		i(2),
 		t("}{"),
-        i(3),
+		i(3),
 		t("} "),
-        i(4)
+		i(4),
 	}),
 })
-
 
 ls.add_snippets("tex", {
 	s("inf", {
 		t("\\infty"),
-        i(1)
+		i(1),
 	}),
 })
-
 
 ls.add_snippets("tex", {
 	s("pm", {
@@ -160,14 +155,20 @@ ls.add_snippets("tex", {
 	}),
 })
 
-
 ls.add_snippets("tex", {
 	s("fig", {
-        t({"\\begin{figure}[ht]", "\t"}),
-        t({"\\centering", "\t"}),
-        t({"\\includegraphics[width=1\\textwidth]{../../../figures/"}),
-        i(1),
-        t({".png}", }),
-        t({"", "\\end{figure}"})
+		t({ "\\begin{figure}[ht]", "\t" }),
+		t({ "\\centering", "\t" }),
+		t({ "\\includegraphics[width=1\\textwidth]{../../../figures/" }),
+		i(1),
+		t({ ".png}" }),
+		t({ "", "\\end{figure}" }),
+	}),
+})
+
+ls.add_snippets("markdown", {
+	s("---", {
+		t("— "),
+		i(0),
 	}),
 })

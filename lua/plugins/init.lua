@@ -56,11 +56,29 @@ local plugins = {
 		event = "InsertEnter",
 		dependencies = { "rafamadriz/friendly-snippets" },
 		config = function()
+			local ls = require("luasnip")
 			require("luasnip.loaders.from_vscode").lazy_load()
-			require("luasnip").config.set_config({
+			ls.config.set_config({
 				history = true,
 				updateevents = "TextChanged,TextChangedI",
 			})
+
+			local keymap = vim.keymap.set
+			keymap({ "i", "s" }, "<Tab>", function()
+				if ls.expand_or_jumpable() then
+					return "<Plug>luasnip-expand-or-jump"
+				else
+					return "<Tab>"
+				end
+			end, { expr = true, silent = true })
+
+			keymap({ "i", "s" }, "<S-Tab>", function()
+				if ls.jumpable(-1) then
+					return "<Plug>luasnip-jump-prev"
+				else
+					return "<S-Tab>"
+				end
+			end, { expr = true, silent = true })
 		end,
 	},
 	{
