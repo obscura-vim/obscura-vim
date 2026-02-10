@@ -38,7 +38,18 @@ map("n", "<leader>b", "<cmd>VimtexCompile<CR>", { desc = "Build latex doc" })
 
 map("n", "<leader>m", "<cmd>MarkdownPreviewToggle<CR>", { desc = "Preview markdown document in Github style" })
 
-map("n", "<leader>p", "<cmd>PencilHard<CR>", { desc = "Turn on pencil hard mode for writing" })
+map("n", "<leader>p", function()
+	local buf = vim.api.nvim_get_current_buf()
+	if vim.b[buf].hard_writer_on then
+		vim.cmd("NoPencil")
+		vim.b[buf].hard_writer_on = false
+		vim.cmd('echo "Writer mode off"')
+	else
+		vim.cmd("PencilHard")
+		vim.b[buf].hard_writer_on = true
+		vim.cmd('echo "Writer mode on"')
+	end
+end, { desc = "Toggle pencil hard mode with log" })
 
 map("n", "<leader>v", "<cmd>VimtexView<CR>", { desc = "View place in latex doc" })
 
