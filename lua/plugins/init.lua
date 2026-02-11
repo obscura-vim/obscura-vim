@@ -384,9 +384,7 @@ local plugins = {
 				enabled = true,
 				cmdline = true,
 				groups = {
-					"BlinkPairsOrange",
-					"BlinkPairsPurple",
-					"BlinkPairsBlue",
+					"BlinkPairs",
 				},
 				unmatched_group = "BlinkPairsUnmatched",
 
