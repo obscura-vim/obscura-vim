@@ -4,6 +4,8 @@ local g = vim.g
 opt.laststatus = 0
 opt.showmode = false
 
+vim.opt.guicursor = "i:block"
+
 opt.clipboard = "unnamedplus"
 
 opt.scrolloff = 5
