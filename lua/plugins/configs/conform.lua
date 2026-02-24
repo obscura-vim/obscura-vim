@@ -44,7 +44,7 @@ require("conform").setup({
 		css = { "prettier" },
 		scss = { "prettier" },
 		sh = { "shfmt" },
-		zsh = { "shfmt" },
+		zsh = { "beautysh" },
 		rust = { "rustfmt" },
 		go = { "gofmt" },
 		toml = { "taplo" },

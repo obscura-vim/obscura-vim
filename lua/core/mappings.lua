@@ -172,11 +172,6 @@ map("n", ",fg", "<cmd>Telescope git_status<CR>", { desc = "Git status" })
 
 map("n", ",fm", "<cmd>Telescope marks<CR>", { desc = "telescope bookmarks" })
 
-map("n", "<A-j>", "<cmd>CoqNext<CR>", { desc = "Next coq line", noremap = true, silent = true })
-map("n", "<F-k>", "<cmd>CoqUndo<CR>", { desc = "Prev coq line", noremap = true, silent = true })
-map("n", "<A-m>", "<cmd> CoqToLine <CR>", { noremap = true, silent = true })
-map("n", "<leader>sc", "<cmd> CoqStart <CR>", { noremap = true, silent = true })
-
 map("n", "<leader>lr", function()
 	vim.cmd("LeanAbbreviationsReverseLookup")
 end, { noremap = true, silent = true, desc = "Lean: Reverse Abbreviation Lookup" })

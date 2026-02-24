@@ -262,16 +262,6 @@ local plugins = {
 		},
 		config = function() end,
 	},
-	{
-		"whonore/Coqtail",
-		lazy = true,
-		ft = "coq",
-		config = function()
-			vim.cmd([[
-            let g:coqtail_enable = 1
-        ]])
-		end,
-	},
 	-- {
 	-- 	"mfussenegger/nvim-jdtls",
 	-- 	lazy = true,

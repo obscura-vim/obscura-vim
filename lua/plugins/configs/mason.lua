@@ -16,8 +16,8 @@ local options = {
 		"jdtls",
 		"kotlin-language-server",
 		"clang-format",
-		"coq-lsp",
 		"tex-fmt",
+		"beautysh",
 		"shfmt",
 		"texlab",
 		"mbake",
@@ -28,7 +28,7 @@ local options = {
 	PATH = "skip",
 
 	ui = {
-        border = "rounded",
+		border = "rounded",
 		icons = {
 			package_pending = " ",
 			package_installed = "󰄳 ",
