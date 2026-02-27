@@ -9,3 +9,5 @@ vim.opt.rtp:prepend(lazypath)
 require("plugins")
 require("snippets")
 require("mdpreview")
+
+vim.cmd.colorscheme("moss")

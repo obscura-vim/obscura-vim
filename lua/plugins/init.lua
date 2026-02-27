@@ -5,6 +5,7 @@ local plugins = {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		lazy = false,
+		highlight = { enabled = true },
 		build = ":TSUpdate",
 		config = function(_, opts)
 			require("plugins.configs.treesitter")
@@ -183,14 +184,22 @@ local plugins = {
 	},
 	{
 		"akinsho/git-conflict.nvim",
-		lazy = true,
 		version = "*",
+		lazy = true,
+		keys = {
+			{
+				",g",
+				function()
+					require("git-conflict").next_conflict()
+				end,
+				desc = "Next git conflict",
+			},
+		},
 		config = function()
 			require("git-conflict").setup({
-				default_mappings = true,
-				default_commands = true,
+				default_mappings = false,
+				default_commands = false,
 				disable_diagnostics = false,
-				list_opener = "copen",
 				highlights = {
 					incoming = "DiffAdd",
 					current = "DiffText",
@@ -262,16 +271,6 @@ local plugins = {
 		},
 		config = function() end,
 	},
-	-- {
-	-- 	"mfussenegger/nvim-jdtls",
-	-- 	lazy = true,
-	-- 	ft = {
-	-- 		"java",
-	-- 	},
-	-- 	config = function()
-	-- 		require("plugins.configs.java")
-	-- 	end,
-	-- },
 	{
 		"stevearc/conform.nvim",
 		lazy = true,
@@ -280,7 +279,6 @@ local plugins = {
 			require("plugins.configs.conform")
 		end,
 	},
-
 	{
 		"kevinhwang91/nvim-ufo",
 		lazy = true,
