@@ -162,6 +162,25 @@ local plugins = {
 		end,
 	},
 	{
+		"folke/which-key.nvim",
+		event = "VeryLazy",
+		opts = function()
+			return require("plugins.configs.which-key")
+		end,
+		config = function(_, opts)
+			local wk = require("which-key")
+			wk.setup(opts)
+			wk.add({
+				{ "<leader>b", group = "Build" },
+				{ "<leader>l", group = "LSP" },
+				{ "<leader>r", group = "Run" },
+				{ "<leader>f", group = "Find" },
+				{ "<leader>t", group = "Toggle" },
+				{ ",f", group = "Find" },
+			})
+		end,
+	},
+	{
 		"nvim-telescope/telescope.nvim",
 		lazy = true,
 		dependencies = {
