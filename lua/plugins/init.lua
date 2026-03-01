@@ -185,27 +185,7 @@ local plugins = {
 	{
 		"akinsho/git-conflict.nvim",
 		version = "*",
-		lazy = true,
-		keys = {
-			{
-				",g",
-				function()
-					require("git-conflict").next_conflict()
-				end,
-				desc = "Next git conflict",
-			},
-		},
-		config = function()
-			require("git-conflict").setup({
-				default_mappings = false,
-				default_commands = false,
-				disable_diagnostics = false,
-				highlights = {
-					incoming = "DiffAdd",
-					current = "DiffText",
-				},
-			})
-		end,
+		config = true,
 	},
 	{
 		"neovim/nvim-lspconfig",

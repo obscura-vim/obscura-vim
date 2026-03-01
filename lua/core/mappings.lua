@@ -176,6 +176,9 @@ map("n", "<leader>lr", function()
 	vim.cmd("LeanAbbreviationsReverseLookup")
 end, { noremap = true, silent = true, desc = "Lean: Reverse Abbreviation Lookup" })
 
+map("n", "gn", "<cmd>GitConflictNextConflict<CR>", { desc = "Next conflict" })
+map("n", "gp", "<cmd>GitConflictPrevConflict<CR>", { desc = "Previous conflict" })
+
 map("i", "<C-.>", "\\Rightarrow", { desc = "Latex right arrow" })
 map("i", "<C-,>", "\\Leftarrow", { desc = "Latex left arrow" })
 
