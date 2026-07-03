@@ -10,4 +10,10 @@ require("plugins")
 require("snippets")
 require("mdpreview")
 
-vim.cmd.colorscheme("moss")
+vim.api.nvim_create_user_command("ObscuraSync", function()
+	require("core.bootstrap").sync()
+end, { desc = "Install all plugins, mason tools and treesitter parsers" })
+
+if not pcall(vim.cmd.colorscheme, "koda-dark") then
+	vim.notify("colorscheme koda is not installed yet, run :ObscuraSync", vim.log.levels.WARN)
+end

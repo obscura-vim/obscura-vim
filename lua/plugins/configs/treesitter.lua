@@ -1,6 +1,6 @@
 local ts = require("nvim-treesitter")
 
-ts.install({
+local parsers = {
 	-- languages
 	"bash",
 	"c",
@@ -54,7 +54,11 @@ ts.install({
 	"printf",
 	"query",
 	"ssh_config",
-})
+}
+
+ts.install(parsers)
 
 vim.treesitter.language.register("javascript", "tsx")
 vim.treesitter.language.register("typescript.tsc", "tsx")
+
+return parsers

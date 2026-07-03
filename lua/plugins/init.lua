@@ -274,18 +274,15 @@ local plugins = {
 		end,
 	},
 	{
-		"moss-theme/moss.nvim",
+		"oskarnurm/koda.nvim",
 		lazy = false,
-		version = "*",
-		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		priority = 1000,
 		config = function()
-			vim.g.last_theme = vim.fn.stdpath("data") .. "/last_theme.txt"
-
-			if vim.fn.filereadable(vim.g.last_theme) == 1 then
-				local theme = vim.fn.readfile(vim.g.last_theme)[1]
-				vim.o.background = theme
-				vim.cmd("colorscheme moss")
-			end
+			vim.o.background = "dark"
+			require("koda").setup({
+				colors = { bg = "#000000" },
+			})
+			vim.cmd("colorscheme koda-dark")
 		end,
 	},
 	{
