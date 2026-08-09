@@ -32,37 +32,3 @@ local function ensure_hugo_server()
 		print("Failed to start hugo server")
 	end
 end
-
-local function sync_markdown_to_preview()
-	local buf = api.nvim_get_current_buf()
-	local path = api.nvim_buf_get_name(buf)
-	if path == "" then
-		return
-	end
-
-	local lines = api.nvim_buf_get_lines(buf, 0, -1, false)
-
-	vim.fn.mkdir(vim.fn.fnamemodify(preview_content, ":h"), "p")
-	vim.fn.writefile(lines, preview_content)
-end
-
-local function markdown_preview()
-	ensure_hugo_server()
-	sync_markdown_to_preview()
-	local file_path = api.nvim_buf_get_name(0)
-	if file_path == "" then
-		return print("No file detected")
-	end
-
-	local tmp_file = content_dir .. "/preview.md"
-	os.execute("cp " .. file_path .. " " .. tmp_file)
-	local url = "http://localhost:1313/preview/"
-	vim.cmd("silent !google-chrome-stable --new-window --app=" .. url)
-end
-
-vim.api.nvim_create_autocmd("BufWritePost", {
-	pattern = "*.md",
-	callback = sync_markdown_to_preview,
-})
-
-api.nvim_create_user_command("MarkdownPreview", markdown_preview, {})

@@ -21,6 +21,14 @@ map("n", "<S-u>", "<C-y>", { desc = "Scroll up" })
 
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "Copy whole file" })
 
+map("n", "<D-v>", '"+p', { desc = "Paste system clipboard" })
+map("x", "<D-v>", '"+p', { desc = "Paste system clipboard" })
+map("i", "<D-v>", "<C-r>+", { desc = "Paste system clipboard" })
+map("c", "<D-v>", "<C-r>+", { desc = "Paste system clipboard" })
+map("t", "<D-v>", function()
+	vim.api.nvim_chan_send(vim.b.terminal_job_id, vim.fn.getreg("+"))
+end, { desc = "Paste system clipboard" })
+
 map("n", "<C-p>", "<cmd>let @+=expand('%:p')<CR>", { desc = "Copy absolute path of current file" })
 
 map("n", "<leader>n", "<cmd>set nu!<CR>", { desc = "Toggle line number" })
@@ -35,8 +43,6 @@ map("n", "gq", function()
 end, { desc = "Format code with Conform" })
 
 map("n", "<leader>b", "<cmd>VimtexCompile<CR>", { desc = "Build latex doc" })
-
-map("n", "<leader>m", "<cmd>MarkdownPreview<CR>", { desc = "Preview markdown document in Github style" })
 
 map("n", "<leader>p", function()
 	local buf = vim.api.nvim_get_current_buf()
@@ -119,22 +125,70 @@ map("v", "<C-r>", function()
 	query = query:gsub("\n", " ")
 	query = vim.fn.shellescape(query)
 
-	vim.cmd("enew")
-	vim.cmd("terminal rgr " .. query)
-	vim.cmd("startinsert")
+	vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "nx", false)
 
-	vim.api.nvim_create_autocmd("TermClose", {
-		buffer = 0,
-		once = true,
-		callback = function()
-			vim.schedule(function()
-				vim.cmd("bdelete! " .. vim.fn.bufnr("%"))
-			end)
-		end,
-	})
+	vim.schedule(function()
+		vim.cmd("enew")
+		vim.cmd("terminal rgr -F " .. query)
+		vim.cmd("startinsert")
+
+		vim.api.nvim_create_autocmd("TermClose", {
+			buffer = 0,
+			once = true,
+			callback = function()
+				local status = vim.v.event.status
+				vim.schedule(function()
+					if status == 0 then
+						vim.cmd("bdelete! " .. vim.fn.bufnr("%"))
+						vim.cmd("checktime")
+					else
+						vim.notify("rgr exited with code " .. status, vim.log.levels.WARN)
+					end
+				end)
+			end,
+		})
+	end)
 end, { desc = "Rename with rgr" })
 
-map("n", "<C-e>", "<cmd>Oil<CR>", { desc = "Open oil file manager" })
+local function toggle_file_explorer()
+	local state = vim.t.netrw_tree_state
+
+	if state and type(state.win) == "number" and vim.api.nvim_win_is_valid(state.win) then
+		local win = state.win
+		state.buf = vim.api.nvim_win_get_buf(win)
+		state.vars = vim.fn.getwinvar(win, "")
+		state.view = vim.api.nvim_win_call(win, vim.fn.winsaveview)
+		state.width = vim.api.nvim_win_get_width(win)
+		vim.bo[state.buf].bufhidden = "hide"
+		vim.api.nvim_win_close(win, false)
+		state.win = nil
+		vim.t.netrw_tree_state = state
+		return
+	end
+
+	if state and type(state.buf) == "number" and vim.api.nvim_buf_is_valid(state.buf) then
+		vim.cmd("botright vsplit")
+		local win = vim.api.nvim_get_current_win()
+		vim.api.nvim_win_set_buf(win, state.buf)
+		for name, value in pairs(state.vars) do
+			vim.fn.setwinvar(win, name, value)
+		end
+		vim.api.nvim_win_set_width(win, state.width)
+		vim.wo.winfixwidth = true
+		vim.fn.winrestview(state.view)
+		state.win = win
+		vim.t.netrw_tree_state = state
+		return
+	end
+
+	vim.cmd("Lexplore!")
+	local win = vim.api.nvim_get_current_win()
+	local buf = vim.api.nvim_get_current_buf()
+	vim.bo[buf].bufhidden = "hide"
+	vim.t.netrw_tree_state = { win = win, buf = buf }
+end
+
+map("n", "<C-e>", toggle_file_explorer, { desc = "Toggle file explorer" })
 
 map("n", ",ff", "<cmd>Telescope find_files<CR>", { desc = "Find files" })
 

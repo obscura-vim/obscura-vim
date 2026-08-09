@@ -18,7 +18,7 @@ This is a configuration built for steady concentration. It is minimal in surface
 
 ## What’s Inside
 
-Search, files, navigation, formatting, snippets, and a subdued theme are wired together with lazy loading and pinned versions for stability. The stack includes Telescope + FZF + ripgrep, Oil, Flash + UFO, Conform, Blink.cmp + LuaSnip, and Moss.
+Search, files, navigation, formatting, snippets, and a subdued theme are wired together with lazy loading and pinned versions for stability. The stack includes Telescope + FZF + ripgrep, netrw, Flash + UFO, Conform, Blink.cmp + LuaSnip, and Koda.
 
 ## Installation
 
@@ -81,7 +81,7 @@ Leader is `Space`.
 - `Space + ff` — find files
 - `Space + fw` — live grep
 - `Tab` — buffers picker
-- `Ctrl + e` — Oil file manager
+- `Ctrl + e` — toggle netrw file tree on the right
 - `s` — Flash jump
 - `gq` — format via Conform
 - `Visual + Ctrl + r` — rename via `rgr`

@@ -25,7 +25,7 @@ local options = {
 	},
 	automatic_installation = false,
 
-	PATH = "skip",
+	PATH = "prepend",
 
 	ui = {
 		border = "rounded",

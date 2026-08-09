@@ -74,7 +74,7 @@ local options = {
 			height = 0.80,
 			preview_cutoff = 1,
 		},
-		file_sorter = require("telescope.sorters").get_fuzzy_file,
+        file_sorter = require("telescope").extensions.fzf.native_fzf_sorter,
         file_ignore_patterns = { "%.git/", "node_modules" },
 		generic_sorter = require("telescope.sorters").get_generic_fuzzy_sorter,
 		path_display = { "truncate" },
@@ -105,7 +105,7 @@ local options = {
 			fuzzy = true,
 			override_generic_sorter = true,
 			override_file_sorter = true,
-			case_mode = "ignore_case",
+			case_mode = "smart_case",
 		},
 	},
 }

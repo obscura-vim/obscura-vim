@@ -12,6 +12,14 @@ local plugins = {
 		end,
 	},
 	{
+		"iamcco/markdown-preview.nvim",
+		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+		ft = { "markdown" },
+		build = function()
+			vim.fn["mkdp#util#install"]()
+		end,
+	},
+	{
 		"lukas-reineke/indent-blankline.nvim",
 		main = "ibl",
 		lazy = true,
@@ -196,43 +204,6 @@ local plugins = {
 		end,
 	},
 	{
-		"stevearc/oil.nvim",
-		lazy = false,
-		opts = {
-			buf_options = {
-				buflisted = false,
-				bufhidden = "hide",
-			},
-			keymaps = {
-				["g?"] = "actions.show_help",
-				["<CR>"] = "actions.select",
-				["<C-s>"] = { "actions.select", opts = { vertical = true } },
-				["<C-h>"] = { "actions.select", opts = { horizontal = true } },
-				["<C-t>"] = { "actions.select", opts = { tab = true } },
-				["<C-p>"] = "actions.preview",
-				["<Esc>"] = "actions.close",
-				["<C-r>"] = "actions.refresh",
-				["-"] = { "actions.parent", mode = "n" },
-				["_"] = { "actions.open_cwd", mode = "n" },
-				[">"] = { "actions.cd", mode = "n" },
-				["g~"] = { "actions.cd", opts = { scope = "tab" }, mode = "n" },
-				["gs"] = { "actions.change_sort", mode = "n" },
-				["gx"] = "actions.open_external",
-				["g."] = { "actions.toggle_hidden", mode = "n" },
-				["g\\"] = { "actions.toggle_trash", mode = "n" },
-			},
-			view_options = {
-				show_hidden = true,
-				natural_order = "fast",
-				case_insensitive = false,
-				sort = { { "type", "asc" }, { "name", "asc" } },
-			},
-			delete_to_trash = false,
-			skip_confirm_for_simple_edits = false,
-			prompt_save_on_select_new_entry = true,
-		},
-	},
-	{
 		"lervag/vimtex",
 		lazy = true,
 		config = function()
@@ -278,11 +249,11 @@ local plugins = {
 		lazy = false,
 		priority = 1000,
 		config = function()
-			vim.o.background = "dark"
 			require("koda").setup({
-				colors = { bg = "#000000" },
+				transparent = true,
+				colors = { bg = vim.o.background == "light" and "#faf9f5" or "#000000" },
 			})
-			vim.cmd("colorscheme koda-dark")
+			vim.cmd("colorscheme koda-" .. vim.o.background)
 		end,
 	},
 	{
@@ -316,6 +287,26 @@ local plugins = {
 		},
 	},
 	{
+		"esmuellert/codediff.nvim",
+		cmd = "CodeDiff",
+		opts = {
+			diff = {
+				layout = "side-by-side",
+				compact = true,
+				highlight_added_deleted_files = true,
+			},
+			explorer = {
+				view_mode = "tree",
+				untracked = "all",
+				initial_focus = "explorer",
+			},
+		},
+		config = function(_, opts)
+			require("codediff").setup(opts)
+			require("codediff_layout").setup()
+		end,
+	},
+	{
 		"reedes/vim-pencil",
 		event = "BufReadPost",
 		config = function()
@@ -336,8 +327,10 @@ local plugins = {
 	{
 		"saghen/blink.pairs",
 		version = "*",
-
-		dependencies = "saghen/blink.download",
+		dependencies = "saghen/blink.lib",
+		build = function()
+			require("blink.pairs").download():pwait(60000)
+		end,
 		opts = {
 			mappings = {
 				enabled = true,

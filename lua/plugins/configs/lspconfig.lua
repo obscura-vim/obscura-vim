@@ -101,4 +101,26 @@ for _, server_name in ipairs(servers) do
 	vim.lsp.enable(server_name)
 end
 
+vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+	pattern = { "*.star", "i.yaml", "i.*.yaml" },
+	callback = function(args)
+		local root_dir = vim.fs.dirname(
+			vim.fs.find({ "a.yaml", ".arcadia.root" }, { upward = true, path = args.file })[1]
+		)
+		if not root_dir then
+			return
+		end
+		vim.lsp.start({
+			name = "infractl",
+			cmd = { "ya", "tool", "infractl", "lsp" },
+			root_dir = root_dir,
+			on_attach = function(client, bufnr)
+				client.server_capabilities.documentFormattingProvider = false
+				client.server_capabilities.documentRangeFormattingProvider = false
+			end,
+			capabilities = M.capabilities,
+		})
+	end,
+})
+
 return M

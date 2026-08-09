@@ -40,23 +40,47 @@ vim.opt.fillchars:append({ eob = "~" })
 vim.opt.list = false
 vim.opt.shortmess:remove("I")
 
-local is_windows = vim.loop.os_uname().sysname == "Windows_NT"
+local sysname = vim.loop.os_uname().sysname
+local is_windows = sysname == "Windows_NT"
 if not is_windows then
-	vim.o.shell = "/usr/bin/zsh"
+	vim.o.shell = sysname == "Darwin" and "/bin/zsh" or "/usr/bin/zsh"
 	vim.o.shellcmdflag = "-c"
 end
 
-vim.o.background = "dark"
+local theme_state = vim.fn.stdpath("data") .. "/last_theme.txt"
+local theme_file = io.open(theme_state, "r")
+local theme = theme_file and theme_file:read("*l") or "dark"
+if theme_file then
+	theme_file:close()
+end
+vim.o.background = theme == "light" and "light" or "dark"
 vim.o.showtabline = 0
 vim.o.cursorline = true
 
 g.mapleader = " "
+g.netrw_banner = 0
+g.netrw_liststyle = 3
+g.netrw_winsize = 25
 
 for _, provider in ipairs({ "node", "perl", "python3", "ruby" }) do
 	vim.g["loaded_" .. provider .. "_provider"] = 0
 end
 
 vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin" .. (is_windows and ";" or ":") .. vim.env.PATH
+
+if not is_windows then
+	for _, dir in ipairs({ "/opt/local/bin", "/opt/homebrew/bin", "/usr/local/bin" }) do
+		if vim.fn.isdirectory(dir) == 1 and not (":" .. vim.env.PATH .. ":"):find(":" .. dir .. ":", 1, true) then
+			vim.env.PATH = dir .. ":" .. vim.env.PATH
+		end
+	end
+end
+
+vim.filetype.add({
+	extension = {
+		star = "python",
+	},
+})
 
 local function in_markdown_yaml()
 	if vim.bo.filetype ~= "markdown" then
