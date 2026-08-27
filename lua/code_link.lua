@@ -110,4 +110,8 @@ function M.copy_diff_selection(path, lines, first, last)
 	return copy(format_link(path, positions[1], positions[#positions]))
 end
 
+function M.copy_path_selection(path, first, last)
+	return copy(format_link(path, math.min(first, last), math.max(first, last)))
+end
+
 return M

@@ -1,5 +1,7 @@
 local M = {}
 local state = {}
+local FULL_CONTEXT = 1000000
+local VISIBLE_CONTEXT = 3
 
 local function is_header(line)
 	return line:match("^diff %-%-git ") or line:match("^diff %-ruN ")
@@ -38,16 +40,67 @@ local function section_name(lines, item, index)
 	return ("diff-%d"):format(index)
 end
 
+local function context_folds(lines)
+	local folds = {}
+	local run_start
+	local function finish_run(run_end)
+		if run_start and run_end - run_start + 1 > VISIBLE_CONTEXT * 2 then
+			table.insert(folds, {
+				first = run_start + VISIBLE_CONTEXT,
+				last = run_end - VISIBLE_CONTEXT,
+			})
+		end
+		run_start = nil
+	end
+	for index, line in ipairs(lines) do
+		if line:sub(1, 1) == " " then
+			run_start = run_start or index
+		else
+			finish_run(index - 1)
+		end
+	end
+	finish_run(#lines)
+	return folds
+end
+
+local function configure_folds(lines, enabled)
+	vim.api.nvim_win_call(state.main_window, function()
+		vim.cmd("silent! normal! zE")
+		vim.wo.foldmethod = "manual"
+		vim.wo.foldenable = enabled
+		vim.wo.foldlevel = 0
+		if enabled then
+			for _, fold in ipairs(context_folds(lines)) do
+				vim.cmd(("silent %d,%dfold"):format(fold.first, fold.last))
+			end
+		end
+	end)
+end
+
 local function show_section(item)
 	if not item or not vim.api.nvim_buf_is_valid(state.main) then
 		return
 	end
+	local lines
+	local filetype
+	if item.plain_content ~= nil then
+		lines = vim.split(item.plain_content, "\n", { plain = true })
+		if lines[#lines] == "" then
+			table.remove(lines)
+		end
+		filetype = vim.filetype.match({ filename = item.name }) or ""
+	else
+		lines = vim.list_slice(state.lines, item.start, item.finish)
+		filetype = "diff"
+	end
 	vim.bo[state.main].modifiable = true
-	vim.api.nvim_buf_set_lines(state.main, 0, -1, false, vim.list_slice(state.lines, item.start, item.finish))
+	vim.api.nvim_buf_set_lines(state.main, 0, -1, false, lines)
 	vim.bo[state.main].modifiable = false
 	vim.bo[state.main].modified = false
+	vim.bo[state.main].filetype = filetype
 	state.selected = item
 	vim.api.nvim_set_current_win(state.main_window)
+	configure_folds(lines, item.plain_content == nil)
 end
 
 local function add_path(root, item)
@@ -80,7 +133,8 @@ local function render_nodes(nodes, depth, lines, line_items)
 	for _, name in ipairs(sorted_keys(nodes)) do
 		local node = nodes[name]
 		local directory = next(node.children) ~= nil
-		table.insert(lines, string.rep("  ", depth) .. name .. (directory and "/" or ""))
+		local prefix = depth == 0 and "" or string.rep("| ", depth)
+		table.insert(lines, prefix .. name .. (directory and "/" or ""))
 		line_items[#lines] = node.item
 		if directory then
 			render_nodes(node.children, depth + 1, lines, line_items)
@@ -93,7 +147,7 @@ local function create_tree(items)
 	for _, item in ipairs(items) do
 		add_path(root, item)
 	end
-	local lines = {}
+	local lines = { "../" }
 	local line_items = {}
 	render_nodes(root, 0, lines, line_items)
 	return lines, line_items
@@ -107,6 +161,10 @@ end
 local function copy_code_link()
 	local first = vim.fn.line("v")
 	local last = vim.fn.line(".")
+	if state.selected.plain_content ~= nil then
+		require("code_link").copy_path_selection(state.selected.name, first, last)
+		return
+	end
 	local lines = vim.api.nvim_buf_get_lines(state.main, 0, -1, false)
 	require("code_link").copy_diff_selection(state.selected.name, lines, first, last)
 end
@@ -205,7 +263,7 @@ local function read_file(path)
 end
 
 local function file_patch(path, before, after)
-	local ok, body = pcall(vim.diff, before or "", after or "", { result_type = "unified", ctxlen = 3 })
+	local ok, body = pcall(vim.diff, before or "", after or "", { result_type = "unified", ctxlen = FULL_CONTEXT })
 	if not ok then
 		return "diff --git a/" .. path .. " b/" .. path .. "\nBinary files differ\n"
 	end
@@ -218,12 +276,13 @@ local function file_patch(path, before, after)
 end
 
 local function git_worktree_patch(root, paths)
-	local args = { "git", "diff", "--no-ext-diff", "--no-color", "HEAD" }
+	local args = { "git", "diff", "--no-ext-diff", "--no-color", "--unified=" .. FULL_CONTEXT, "HEAD" }
 	if #paths > 0 then
 		table.insert(args, "--")
 		vim.list_extend(args, paths)
 	end
 	local patch = command(args, root)
+	local plain_files = {}
 	local status = command({ "git", "status", "--porcelain=v1", "-z", "--untracked-files=all" }, root)
 	for entry in status:gmatch("([^%z]+)") do
 		if entry:sub(1, 2) == "??" then
@@ -231,19 +290,21 @@ local function git_worktree_patch(root, paths)
 			if path_selected(path, paths) then
 				local content = read_file(root .. "/" .. path)
 				if content then
-					patch = patch .. file_patch(path, nil, content)
+					plain_files[path] = content
 				end
 			end
 		end
 	end
-	return patch
+	return patch, plain_files
 end
 
 local function arc_worktree_patch(root, paths)
 	local status = command({ "arc", "status", "--json", "-u", "all" }, root)
 	local decoded = vim.json.decode(status)
+	local entries = decoded.status or {}
 	local patch = ""
-	for _, entry in ipairs(decoded.status and decoded.status.changed or {}) do
+	local plain_files = {}
+	for _, entry in ipairs(entries.changed or {}) do
 		local path = entry.path
 		if type(path) == "string" and path_selected(path, paths) then
 			local original = vim.system({ "arc", "show", "HEAD:" .. path }, { cwd = root, text = true }):wait()
@@ -252,7 +313,16 @@ local function arc_worktree_patch(root, paths)
 			patch = patch .. file_patch(path, before, after)
 		end
 	end
-	return patch
+	for _, entry in ipairs(entries.untracked or {}) do
+		local path = entry.path
+		if type(path) == "string" and path_selected(path, paths) then
+			local content = read_file(root .. "/" .. path)
+			if content then
+				plain_files[path] = content
+			end
+		end
+	end
+	return patch, plain_files
 end
 
 local function branch_name(vcs, root)
@@ -287,10 +357,21 @@ local function pull_request_patch(vcs, root)
 		error("current repository state has no branch")
 	end
 	if vcs == "git" then
-		local metadata = vim.json.decode(command({ "gh", "pr", "view", branch, "--json", "number" }, root))
+		local metadata = vim.json.decode(command({ "gh", "pr", "view", branch, "--json", "number,baseRefOid,headRefOid" }, root))
 		local number = json_value(metadata, { number = true })
 		if not number then
 			error("GitHub PR not found for the current branch")
+		end
+		local base = json_value(metadata, { baseRefOid = true })
+		local head = json_value(metadata, { headRefOid = true })
+		if base and head then
+			local result = vim.system(
+				{ "git", "diff", "--no-ext-diff", "--no-color", "--unified=" .. FULL_CONTEXT, tostring(base), tostring(head) },
+				{ cwd = root, text = true }
+			):wait()
+			if result.code == 0 then
+				return result.stdout or ""
+			end
 		end
 		return command({ "gh", "pr", "diff", tostring(number), "--patch", "--color", "never" }, root)
 	end
@@ -305,9 +386,9 @@ end
 local function commit_patch(vcs, root, revision)
 	revision = revision or "HEAD"
 	if vcs == "git" then
-		return command({ "git", "show", "--patch", "--format=", "--no-ext-diff", "--no-color", revision }, root)
+		return command({ "git", "show", "--patch", "--format=", "--no-ext-diff", "--no-color", "--unified=" .. FULL_CONTEXT, revision }, root)
 	end
-	return command({ "arc", "show", "--git", "--no-color", revision }, root)
+	return command({ "arc", "show", "--git", "--no-color", "-U", tostring(FULL_CONTEXT), revision }, root)
 end
 
 local function clean_patch(patch)
@@ -341,20 +422,26 @@ end
 
 local function open_patch(patch, options)
 	patch = clean_patch(patch)
-	local lines = vim.split(patch, "\n", { plain = true })
-	if lines[#lines] == "" then
-		table.remove(lines)
+	local lines = {}
+	if patch ~= "" then
+		lines = vim.split(patch, "\n", { plain = true })
+		if lines[#lines] == "" then
+			table.remove(lines)
+		end
 	end
-	if #lines == 0 then
+
+	local items = #lines > 0 and split_sections(lines) or {}
+	for index, item in ipairs(items) do
+		item.name = section_name(lines, item, index)
+	end
+	for name, content in pairs(options and options.plain_files or {}) do
+		table.insert(items, { name = name, plain_content = content })
+	end
+	if #items == 0 then
 		vim.notify("ndiff: no changes")
 		return
 	end
 	set_tmux_title()
-
-	local items = split_sections(lines)
-	for index, item in ipairs(items) do
-		item.name = section_name(lines, item, index)
-	end
 	local tree_lines, line_items = create_tree(items)
 	state = { lines = lines, items = items, line_items = line_items }
 	state.main = vim.api.nvim_create_buf(false, true)
@@ -371,6 +458,14 @@ local function open_patch(patch, options)
 	vim.bo[state.explorer].bufhidden = "hide"
 	vim.bo[state.explorer].modifiable = false
 	vim.bo[state.explorer].filetype = "ndiff-files"
+	vim.api.nvim_set_hl(0, "NdiffUntracked", { default = true, link = "Added" })
+	for index, item in pairs(line_items) do
+		if item.plain_content ~= nil then
+			local name = vim.fs.basename(item.name)
+			local start = #tree_lines[index] - #name
+			vim.api.nvim_buf_add_highlight(state.explorer, -1, "NdiffUntracked", index - 1, start, -1)
+		end
+	end
 	vim.keymap.set("n", "<CR>", select_file, { buffer = state.explorer, silent = true })
 	vim.keymap.set("n", "<C-e>", toggle_explorer, { buffer = state.explorer, silent = true })
 	vim.keymap.set("n", "<C-e>", toggle_explorer, { buffer = state.main, silent = true })
@@ -411,6 +506,7 @@ function M.start(arguments)
 			error("not inside a Git or Arc repository")
 		end
 		local patch
+		local plain_files
 		local open_tree = true
 		if args[1] == "pr" then
 			if #args > 1 then
@@ -425,10 +521,13 @@ function M.start(arguments)
 		else
 			local paths = normalize_paths(detected.root, cwd, args)
 			open_tree = #paths == 0
-			patch = detected.vcs == "git" and git_worktree_patch(detected.root, paths)
-				or arc_worktree_patch(detected.root, paths)
+			if detected.vcs == "git" then
+				patch, plain_files = git_worktree_patch(detected.root, paths)
+			else
+				patch, plain_files = arc_worktree_patch(detected.root, paths)
+			end
 		end
-		open_patch(patch, { open_tree = open_tree })
+		open_patch(patch, { open_tree = open_tree, plain_files = plain_files })
 	end)
 	if not ok then
 		vim.notify("ndiff: " .. tostring(error_message), vim.log.levels.ERROR)
