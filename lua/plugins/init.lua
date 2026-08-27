@@ -287,26 +287,6 @@ local plugins = {
 		},
 	},
 	{
-		"esmuellert/codediff.nvim",
-		cmd = "CodeDiff",
-		opts = {
-			diff = {
-				layout = "side-by-side",
-				compact = true,
-				highlight_added_deleted_files = true,
-			},
-			explorer = {
-				view_mode = "tree",
-				untracked = "all",
-				initial_focus = "explorer",
-			},
-		},
-		config = function(_, opts)
-			require("codediff").setup(opts)
-			require("codediff_layout").setup()
-		end,
-	},
-	{
 		"reedes/vim-pencil",
 		event = "BufReadPost",
 		config = function()

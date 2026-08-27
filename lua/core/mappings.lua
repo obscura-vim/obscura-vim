@@ -20,6 +20,9 @@ map("n", "<S-d>", "<C-e>", { desc = "Scroll down" })
 map("n", "<S-u>", "<C-y>", { desc = "Scroll up" })
 
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "Copy whole file" })
+map("x", "<C-y>", function()
+	require("code_link").copy_buffer_selection()
+end, { desc = "Copy code link" })
 
 map("n", "<D-v>", '"+p', { desc = "Paste system clipboard" })
 map("x", "<D-v>", '"+p', { desc = "Paste system clipboard" })
