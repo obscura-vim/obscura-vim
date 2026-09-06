@@ -1,348 +1,121 @@
 local map = require("core.mappings")
 
-local plugins = {
-	"nvim-lua/plenary.nvim",
-	{
-		"nvim-treesitter/nvim-treesitter",
-		lazy = false,
-		highlight = { enabled = true },
-		build = ":TSUpdate",
-		config = function(_, opts)
-			require("plugins.configs.treesitter")
-		end,
-	},
-	{
-		"iamcco/markdown-preview.nvim",
-		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-		ft = { "markdown" },
-		build = function()
-			vim.fn["mkdp#util#install"]()
-		end,
-	},
-	{
-		"lukas-reineke/indent-blankline.nvim",
-		main = "ibl",
-		lazy = true,
-		keys = {
-			{
-				"<leader>i",
-				map.ibl["<leader>i"],
-				desc = "Toggle indent blankline",
-			},
-		},
-		opts = {
-			indent = { char = "▏" },
-			enabled = false,
-			scope = {
-				enabled = false,
-				show_start = false,
-				show_end = false,
-				highlight = nil,
-			},
-		},
-	},
-	{
-		"williamboman/mason.nvim",
-		lazy = true,
-		event = { "BufReadPre", "BufNewFile" },
-		cmd = { "Mason", "MasonInstall", "MasonInstallAll", "MasonUpdate" },
-		opts = function()
-			return require("plugins.configs.mason")
-		end,
-		config = function(_, opts)
-			require("mason").setup(opts)
-
-			vim.api.nvim_create_user_command("MasonInstallAll", function()
-				vim.cmd("MasonInstall " .. table.concat(opts.ensure_installed, " "))
-			end, {})
-
-			vim.g.mason_binaries_list = opts.ensure_installed
-		end,
-	},
-	{
-		"L3MON4D3/LuaSnip",
-		lazy = true,
-		event = "InsertEnter",
-		dependencies = { "rafamadriz/friendly-snippets" },
-		config = function()
-			local ls = require("luasnip")
-			require("luasnip.loaders.from_vscode").lazy_load()
-			ls.config.set_config({
-				history = true,
-				updateevents = "TextChanged,TextChangedI",
-			})
-
-			local keymap = vim.keymap.set
-			keymap({ "i", "s" }, "<Tab>", function()
-				if ls.expand_or_jumpable() then
-					return "<Plug>luasnip-expand-or-jump"
-				else
-					return "<Tab>"
-				end
-			end, { expr = true, silent = true })
-
-			keymap({ "i", "s" }, "<S-Tab>", function()
-				if ls.jumpable(-1) then
-					return "<Plug>luasnip-jump-prev"
-				else
-					return "<S-Tab>"
-				end
-			end, { expr = true, silent = true })
-		end,
-	},
-	{
-		"saghen/blink.cmp",
-		lazy = false,
-		version = "1.*",
-		event = "InsertEnter",
-		dependencies = {
-			"rafamadriz/friendly-snippets",
-			"L3MON4D3/LuaSnip",
-		},
-		opts = {
-			keymap = {
-				preset = "none",
-
-				["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
-				["<CR>"] = { "accept", "fallback" },
-
-				["<C-j>"] = { "select_next", "fallback" },
-				["<C-k>"] = { "select_prev", "fallback" },
-				["<C-e>"] = { "hide", "fallback" },
-			},
-			cmdline = {
-				enabled = true,
-				completion = {
-					menu = { auto_show = false },
-					ghost_text = { enabled = false },
-				},
-				keymap = {
-					["<Tab>"] = { "show", "accept" },
-					["<Esc>"] = { "cancel" },
-					["<C-j>"] = { "show_and_insert_or_accept_single", "select_next" },
-					["<C-k>"] = { "show_and_insert_or_accept_single", "select_prev" },
-					["<CR>"] = { "accept", "fallback" },
-				},
-			},
-			completion = {
-				documentation = { auto_show = true, window = {
-					border = "rounded",
-				} },
-				trigger = {
-					show_on_insert = false,
-					show_on_keyword = false,
-					show_on_trigger_character = false,
-				},
-				menu = {
-					auto_show = false,
-					border = "rounded",
-					winblend = 0,
-					scrollbar = false,
-				},
-			},
-
-			appearance = {
-				nerd_font_variant = "mono",
-				use_nvim_cmp_as_default = false,
-			},
-
-			sources = {
-				default = { "lsp", "path", "snippets", "buffer" },
-			},
-
-			fuzzy = { implementation = "prefer_rust_with_warning" },
-		},
-	},
-	{
-		"numToStr/Comment.nvim",
-		lazy = true,
-		keys = {
-			{ "gcc", mode = "n", desc = "Comment toggle current line" },
-			{ "gc", mode = { "n", "o" }, desc = "Comment toggle linewise" },
-			{ "gc", mode = "x", desc = "Comment toggle linewise (visual)" },
-			{ "gbc", mode = "n", desc = "Comment toggle current block" },
-			{ "gb", mode = { "n", "o" }, desc = "Comment toggle blockwise" },
-			{ "gb", mode = "x", desc = "Comment toggle blockwise (visual)" },
-		},
-		init = function() end,
-		config = function(_, opts)
-			require("plugins.configs.others").comment(opts)
-		end,
-	},
-	{
-		"nvim-telescope/telescope.nvim",
-		lazy = true,
-		dependencies = {
-			"nvim-treesitter/nvim-treesitter",
-			{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-		},
-		cmd = "Telescope",
-		init = function() end,
-		opts = function()
-			return require("plugins.configs.telescope")
-		end,
-		config = function(_, opts)
-			local telescope = require("telescope")
-			telescope.setup(opts)
-
-			for _, ext in ipairs(opts.extensions_list) do
-				telescope.load_extension(ext)
-			end
-		end,
-	},
-	{
-		"akinsho/git-conflict.nvim",
-		version = "*",
-		config = true,
-	},
-	{
-		"neovim/nvim-lspconfig",
-		lazy = true,
-		event = { "BufReadPre", "BufNewFile" },
-		config = function()
-			require("plugins.configs.lspconfig")
-		end,
-	},
-	{
-		"lervag/vimtex",
-		lazy = true,
-		config = function()
-			require("plugins.configs.others").vimtex()
-		end,
-		ft = { "tex", "cls" },
-	},
-	{
-
-		"williamboman/mason-lspconfig.nvim",
-		lazy = true,
-		event = { "BufReadPre", "BufNewFile" },
-		dependencies = {
-			"williamboman/mason.nvim",
-			"neovim/nvim-lspconfig",
-		},
-		config = function() end,
-	},
-	{
-		"stevearc/conform.nvim",
-		lazy = true,
-		event = "VeryLazy",
-		config = function()
-			require("plugins.configs.conform")
-		end,
-	},
-	{
-		"kevinhwang91/nvim-ufo",
-		lazy = true,
-		dependencies = { "kevinhwang91/promise-async", "nvim-treesitter/nvim-treesitter" },
-		keys = {
-			{ "zR", map.ufo.zR, desc = "Open all folds" },
-			{ "zM", map.ufo.zM, desc = "Close all folds" },
-			{ "<leader>h", map.ufo["<leader>h"], desc = "Toggle fold under cursor" },
-		},
-
-		config = function()
-			require("plugins.configs.others").ufo()
-		end,
-	},
-	{
-		"oskarnurm/koda.nvim",
-		lazy = false,
-		priority = 1000,
-		config = function()
-			require("koda").setup({
-				transparent = true,
-				colors = { bg = vim.o.background == "light" and "#faf9f5" or "#000000" },
-			})
-			vim.cmd("colorscheme koda-" .. vim.o.background)
-		end,
-	},
-	{
-		"norcalli/nvim-colorizer.lua",
-		lazy = true,
-		keys = {
-			{ "<leader>c", map.colorizer["<leader>c"], desc = "Toggle Colorizer" },
-		},
-	},
-	{
-		"folke/flash.nvim",
-		lazy = true,
-		event = "VeryLazy",
-		keys = {
-			{
-				"s",
-				mode = { "n", "x", "o" },
-				function()
-					require("flash").jump()
-				end,
-				desc = "Flash",
-			},
-		},
-	},
-	{
-		"lewis6991/gitsigns.nvim",
-		lazy = true,
-		module = true,
-		keys = {
-			{ "<leader>g", map.gitsigns["<leader>g"], desc = "Toggle Git signs" },
-		},
-	},
-	{
-		"reedes/vim-pencil",
-		event = "BufReadPost",
-		config = function()
-			vim.g["pencil#wrapMode"] = "hard"
-			vim.g["pencil#textwidth"] = 65
-			vim.g["pencil#autoformat"] = 1
-		end,
-	},
-	{
-		"nativerv/cyrillic.nvim",
-		event = { "VeryLazy" },
-		config = function()
-			require("cyrillic").setup({
-				no_cyrillic_abbrev = false,
-			})
-		end,
-	},
-	{
-		"saghen/blink.pairs",
-		version = "*",
-		dependencies = "saghen/blink.lib",
-		build = function()
-			require("blink.pairs").download():pwait(60000)
-		end,
-		opts = {
-			mappings = {
-				enabled = true,
-				cmdline = true,
-				disabled_filetypes = {},
-				pairs = {},
-			},
-			highlights = {
-				enabled = true,
-				cmdline = true,
-				groups = {
-					"BlinkPairs",
-				},
-				unmatched_group = "BlinkPairsUnmatched",
-
-				matchparen = {
-					enabled = true,
-					cmdline = false,
-					include_surrounding = false,
-					group = "BlinkPairsMatchParen",
-					priority = 250,
-				},
-			},
-			debug = false,
-		},
-	},
-}
-
-require("lazy").setup({
-	spec = plugins,
-
-	ui = {
-		border = "rounded",
-	},
+vim.pack.add({
+	{ src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "4916d659" },
+	{ src = "https://github.com/iamcco/markdown-preview.nvim", version = "a923f5f" },
+	{ src = "https://github.com/lukas-reineke/indent-blankline.nvim", version = "d28a3f7" },
+	{ src = "https://github.com/williamboman/mason.nvim", version = "2a6940a" },
+	{ src = "https://github.com/L3MON4D3/LuaSnip", version = "0abc8f3" },
+	{ src = "https://github.com/rafamadriz/friendly-snippets", version = "6cd7280" },
+	{ src = "https://github.com/saghen/blink.cmp", version = "78336bc" },
+	{ src = "https://github.com/nvim-lua/plenary.nvim", version = "74b06c6" },
+	{ src = "https://github.com/nvim-telescope/telescope.nvim", version = "427b576" },
+	{ src = "https://github.com/akinsho/git-conflict.nvim", version = "4bbfdd9" },
+	{ src = "https://github.com/lervag/vimtex", version = "5e6a06f5" },
+	{ src = "https://github.com/stevearc/conform.nvim", version = "619363c" },
+	{ src = "https://github.com/kevinhwang91/promise-async", version = "119e896" },
+	{ src = "https://github.com/kevinhwang91/nvim-ufo", version = "ab3eb12" },
+	{ src = "https://github.com/oskarnurm/koda.nvim", version = "a7da3ce" },
+	{ src = "https://github.com/norcalli/nvim-colorizer.lua", version = "a065833" },
+	{ src = "https://github.com/folke/flash.nvim", version = "fcea7ff" },
+	{ src = "https://github.com/lewis6991/gitsigns.nvim", version = "eb60cc7" },
+	{ src = "https://github.com/reedes/vim-pencil", version = "6d70438" },
+	{ src = "https://github.com/nativerv/cyrillic.nvim", version = "86186af" },
+	{ src = "https://github.com/saghen/blink.lib", version = "5876dd9" },
+	{ src = "https://github.com/saghen/blink.pairs", version = "aad9046" },
 })
+
+require("plugins.configs.treesitter")
+
+require("ibl").setup({
+	indent = { char = "▏" },
+	enabled = false,
+	scope = { enabled = false, show_start = false, show_end = false, highlight = nil },
+})
+
+local mason_options = require("plugins.configs.mason")
+require("mason").setup(mason_options)
+vim.g.mason_binaries_list = mason_options.ensure_installed
+
+local luasnip = require("luasnip")
+require("luasnip.loaders.from_vscode").lazy_load()
+luasnip.config.set_config({ history = true, updateevents = "TextChanged,TextChangedI" })
+
+vim.keymap.set({ "i", "s" }, "<Tab>", function()
+	return luasnip.expand_or_jumpable() and "<Plug>luasnip-expand-or-jump" or "<Tab>"
+end, { expr = true, silent = true })
+
+vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
+	return luasnip.jumpable(-1) and "<Plug>luasnip-jump-prev" or "<S-Tab>"
+end, { expr = true, silent = true })
+
+require("blink.cmp").setup({
+	keymap = {
+		preset = "none",
+		["<CR>"] = { "accept", "fallback" },
+		["<C-j>"] = { "select_next", "show" },
+		["<C-k>"] = { "select_prev", "fallback" },
+		["<C-e>"] = { "hide", "fallback" },
+	},
+	cmdline = {
+		enabled = true,
+		completion = { menu = { auto_show = false }, ghost_text = { enabled = false } },
+		keymap = {
+			["<Tab>"] = { "show", "accept" },
+			["<Esc>"] = { "cancel" },
+			["<C-j>"] = { "show_and_insert_or_accept_single", "select_next" },
+			["<C-k>"] = { "show_and_insert_or_accept_single", "select_prev" },
+			["<CR>"] = { "accept", "fallback" },
+		},
+	},
+	completion = {
+		documentation = { auto_show = true, window = { border = "rounded" } },
+		trigger = { show_on_insert = false, show_on_keyword = false, show_on_trigger_character = false },
+		menu = { auto_show = false, border = "rounded", winblend = 0, scrollbar = false },
+	},
+	appearance = { nerd_font_variant = "mono", use_nvim_cmp_as_default = false },
+	sources = { default = { "lsp", "path", "snippets", "buffer" } },
+	fuzzy = { implementation = "prefer_rust_with_warning" },
+})
+
+require("telescope").setup(require("plugins.configs.telescope"))
+require("plugins.configs.lspconfig")
+require("git-conflict").setup()
+require("plugins.configs.others").vimtex()
+require("plugins.configs.conform")
+require("plugins.configs.others").ufo()
+
+vim.g["pencil#wrapMode"] = "hard"
+vim.g["pencil#textwidth"] = 65
+vim.g["pencil#autoformat"] = 1
+
+require("koda").setup({
+	transparent = true,
+	colors = { bg = vim.o.background == "light" and "#faf9f5" or "#000000" },
+})
+
+require("cyrillic").setup({ no_cyrillic_abbrev = false })
+
+require("blink.pairs").download():pwait(60000)
+require("blink.pairs").setup({
+	mappings = { enabled = true, cmdline = true, disabled_filetypes = {}, pairs = {} },
+	highlights = {
+		enabled = true,
+		cmdline = true,
+		groups = { "BlinkPairs" },
+		unmatched_group = "BlinkPairsUnmatched",
+		matchparen = { enabled = true, cmdline = false, include_surrounding = false, group = "BlinkPairsMatchParen", priority = 250 },
+	},
+	debug = false,
+})
+
+vim.keymap.set("n", "s", function()
+	require("flash").jump()
+end, { desc = "Flash" })
+
+vim.keymap.set("n", "<leader>i", map.ibl["<leader>i"], { desc = "Toggle indent blankline" })
+vim.keymap.set("n", "zR", map.ufo.zR, { desc = "Open all folds" })
+vim.keymap.set("n", "zM", map.ufo.zM, { desc = "Close all folds" })
+vim.keymap.set("n", "<leader>h", map.ufo["<leader>h"], { desc = "Toggle fold under cursor" })
+vim.keymap.set("n", "<leader>c", map.colorizer["<leader>c"], { desc = "Toggle Colorizer" })
+vim.keymap.set("n", "<leader>g", map.gitsigns["<leader>g"], { desc = "Toggle Git signs" })

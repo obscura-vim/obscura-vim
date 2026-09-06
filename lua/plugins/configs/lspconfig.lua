@@ -23,6 +23,75 @@ end
 
 M.capabilities = require("blink.cmp").get_lsp_capabilities()
 
+local server_configs = {
+	html = {
+		cmd = { "vscode-html-language-server", "--stdio" },
+		filetypes = { "html" },
+		root_markers = { "package.json", ".git" },
+		init_options = {
+			provideFormatter = true,
+			embeddedLanguages = { css = true, javascript = true },
+			configurationSection = { "html", "css", "javascript" },
+		},
+	},
+	cssls = {
+		cmd = { "vscode-css-language-server", "--stdio" },
+		filetypes = { "css", "scss", "less" },
+		root_markers = { "package.json", ".git" },
+		init_options = { provideFormatter = true },
+		settings = { css = { validate = true }, scss = { validate = true }, less = { validate = true } },
+	},
+	tsserver = {
+		cmd = { "typescript-language-server", "--stdio" },
+		filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+		root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+	},
+	clangd = {
+		cmd = { "clangd" },
+		filetypes = { "c", "c.doxygen", "cpp", "cpp.doxygen", "objc", "objcpp", "cuda" },
+		root_markers = { ".clangd", ".clang-tidy", ".clang-format", "compile_commands.json", "compile_flags.txt", "configure.ac", ".git" },
+	},
+	pyright = {
+		cmd = { "pyright-langserver", "--stdio" },
+		filetypes = { "python" },
+		root_markers = { "pyrightconfig.json", "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", ".git" },
+	},
+	lua_ls = {
+		cmd = { "lua-language-server" },
+		filetypes = { "lua" },
+		root_markers = { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" },
+	},
+	rust_analyzer = {
+		cmd = { "rust-analyzer" },
+		filetypes = { "rust" },
+		root_markers = { "Cargo.toml", "rust-project.json", ".git" },
+	},
+	eslint = {
+		cmd = { "vscode-eslint-language-server", "--stdio" },
+		filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue", "svelte", "astro", "htmlangular" },
+		root_markers = { "eslint.config.js", "eslint.config.mjs", "eslint.config.cjs", ".eslintrc", ".eslintrc.js", ".eslintrc.cjs", ".eslintrc.yaml", ".eslintrc.yml", ".eslintrc.json", ".git" },
+	},
+	gopls = {
+		cmd = { "gopls" },
+		filetypes = { "go", "gomod", "gowork", "gotmpl" },
+		root_markers = { "go.work", "go.mod", ".git" },
+	},
+	sqlls = {
+		cmd = { "sql-language-server", "up", "--method", "stdio" },
+		filetypes = { "sql", "mysql" },
+		root_markers = { ".sqllsrc.json" },
+	},
+	texlab = {
+		cmd = { "texlab" },
+		filetypes = { "tex", "cls" },
+		root_markers = { ".git", ".latexmkrc", "latexmkrc", ".texlabroot", "texlabroot", "Tectonic.toml" },
+	},
+}
+
+for name, config in pairs(server_configs) do
+	vim.lsp.config(name, config)
+end
+
 vim.lsp.config("*", {
 	on_attach = M.on_attach,
 	capabilities = M.capabilities,
@@ -47,7 +116,6 @@ vim.lsp.config("lua_ls", {
 				library = {
 					[vim.fn.expand("$VIMRUNTIME/lua")] = true,
 					[vim.fn.expand("$VIMRUNTIME/lua/vim/lsp")] = true,
-					[vim.fn.stdpath("data") .. "/lazy/lazy.nvim/lua/lazy"] = true,
 				},
 				maxPreload = 100000,
 				preloadFileSize = 10000,

@@ -87,16 +87,8 @@ map("t", "<Esc>", vim.api.nvim_replace_termcodes("<C-\\><C-N>", true, true, true
 map("v", "<", "<gv", { desc = "Indent line" })
 map("v", ">", ">gv", { desc = "Indent line" })
 
-map("n", ",c", function()
-	require("Comment.api").toggle.linewise.current()
-end, { desc = "Toggle comment" })
-
-map(
-	"v",
-	",c",
-	"<ESC><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>",
-	{ desc = "Toggle comment" }
-)
+map("n", ",c", "gcc", { remap = true, desc = "Toggle comment" })
+map("v", ",c", "gc", { remap = true, desc = "Toggle comment" })
 
 map("i", "<C-l>", function()
 	vim.lsp.buf.signature_help()

@@ -1,5 +1,3 @@
-local ts = require("nvim-treesitter")
-
 local parsers = {
 	-- languages
 	"bash",
@@ -56,9 +54,13 @@ local parsers = {
 	"ssh_config",
 }
 
-ts.install(parsers)
-
 vim.treesitter.language.register("javascript", "tsx")
 vim.treesitter.language.register("typescript.tsc", "tsx")
+
+vim.api.nvim_create_autocmd("FileType", {
+	callback = function(args)
+		pcall(vim.treesitter.start, args.buf)
+	end,
+})
 
 return parsers
