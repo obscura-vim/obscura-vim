@@ -1,174 +1,45 @@
-local ls = require("luasnip")
-local s = ls.snippet
-local i = ls.insert_node
-local t = ls.text_node
+local M = {}
 
-ls.add_snippets("python", {
-	s("pprint", {
-		t({ "from pprint import pprint", "pprint(" }),
-		i(1),
-		t(")"),
-	}),
-})
+local snippets = {
+	python = { pprint = "from pprint import pprint\npprint(${1})" },
+	markdown = { ["---"] = "— ${0}" },
+	tex = {
+		["not"] = "\\overline{${1}}",
+		fr = "\\frac{${1}}{${2}}",
+		an = "\\begin{align}\n\t${1}\n\\end{align}",
+		a = "\\begin{align*}\n\t${1}\n\\end{align*}",
+		g = "\\begin{gather*}\n\t${1}\n\\end{gather*}",
+		div = "\\ \\vdots \\ ${1}",
+		[">="] = "\\geqslant ${1}",
+		["<="] = "\\eqslantless ${1}",
+		["<=>"] = "\\Leftrightarrow ${1}",
+		["->"] = "\\longrightarrow ${1}",
+		["<-"] = "\\longleftarrow ${1}",
+		bf = "\\textbf{${1}}",
+		enum = "\\begin{enumerate}\n\t${1}\n\\end{enumerate}",
+		sys = "\\begin{cases}\n\t${1}\n\\end{cases}",
+		lim = "\\lim\\limits_{${1} \\to ${2}}{${3}} ${4}",
+		inf = "\\infty${1}",
+		pm = "\\begin{pmatrix}\n\t${1}\n\\end{pmatrix}",
+		vm = "\\begin{vmatrix}\n\t${1}\n\\end{vmatrix}",
+		fig = "\\begin{figure}[ht]\n\t\\centering\n\t\\includegraphics[width=1\\textwidth]{../../../figures/${1}.png}\n\\end{figure}",
+	},
+}
 
-ls.add_snippets("tex", {
-	s("not", {
-		t({ "\\overline{" }),
-		i(1),
-		t("}"),
-	}),
-})
+function M.expand()
+	local row, column = unpack(vim.api.nvim_win_get_cursor(0))
+	local trigger = vim.api.nvim_get_current_line():sub(1, column + 1):match("[^%s]+$")
+	local body = trigger and snippets[vim.bo.filetype] and snippets[vim.bo.filetype][trigger]
+	if not body then
+		return false
+	end
+	vim.schedule(function()
+		local current_row, current_column = unpack(vim.api.nvim_win_get_cursor(0))
+		local end_column = math.min(current_column + 1, #vim.api.nvim_get_current_line())
+		vim.api.nvim_buf_set_text(0, current_row - 1, end_column - #trigger, current_row - 1, end_column, { "" })
+		vim.snippet.expand(body)
+	end)
+	return true
+end
 
-ls.add_snippets("tex", {
-	s("fr", {
-		t({ "\\frac{" }),
-		i(1),
-		t("}{"),
-		i(2),
-		t("}"),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("an", {
-		t({ "\\begin{align}", "\t" }),
-		i(1),
-		t({ "", "\\end{align}" }),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("a", {
-		t({ "\\begin{align*}", "\t" }),
-		i(1),
-		t({ "", "\\end{align*}" }),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("g", {
-		t({ "\\begin{gather*}", "\t" }),
-		i(1),
-		t({ "", "\\end{gather*}" }),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("div", {
-		t("\\ \\vdots \\ "),
-		i(1),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s(">=", {
-		t("\\geqslant "),
-		i(1),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("<=", {
-		t("\\eqslantless "),
-		i(1),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("<=>", {
-		t("\\Leftrightarrow "),
-		i(1),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("->", {
-		t("\\longrightarrow "),
-		i(1),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("<-", {
-		t("\\longleftarrow "),
-		i(1),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("bf", {
-		t("\\textbf{"),
-		i(1),
-		t("}"),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("enum", {
-		t({ "\\begin{enumerate}", "\t" }),
-		i(1),
-		t({ "", "\\end{enumerate}" }),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("sys", {
-		t({ "\\begin{cases}", "\t" }),
-		i(1),
-		t({ "", "\\end{cases}" }),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("lim", {
-		t("\\lim\\limits_{"),
-		i(1),
-		t(" \\to "),
-		i(2),
-		t("}{"),
-		i(3),
-		t("} "),
-		i(4),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("inf", {
-		t("\\infty"),
-		i(1),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("pm", {
-		t({ "\\begin{pmatrix}", "\t" }),
-		i(1),
-		t({ "", "\\end{pmatrix}" }),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("vm", {
-		t({ "\\begin{vmatrix}", "\t" }),
-		i(1),
-		t({ "", "\\end{vmatrix}" }),
-	}),
-})
-
-ls.add_snippets("tex", {
-	s("fig", {
-		t({ "\\begin{figure}[ht]", "\t" }),
-		t({ "\\centering", "\t" }),
-		t({ "\\includegraphics[width=1\\textwidth]{../../../figures/" }),
-		i(1),
-		t({ ".png}" }),
-		t({ "", "\\end{figure}" }),
-	}),
-})
-
-ls.add_snippets("markdown", {
-	s("---", {
-		t("— "),
-		i(0),
-	}),
-})
+return M

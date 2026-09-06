@@ -5,8 +5,6 @@ vim.pack.add({
 	{ src = "https://github.com/iamcco/markdown-preview.nvim", version = "a923f5f" },
 	{ src = "https://github.com/lukas-reineke/indent-blankline.nvim", version = "d28a3f7" },
 	{ src = "https://github.com/williamboman/mason.nvim", version = "2a6940a" },
-	{ src = "https://github.com/L3MON4D3/LuaSnip", version = "0abc8f3" },
-	{ src = "https://github.com/rafamadriz/friendly-snippets", version = "6cd7280" },
 	{ src = "https://github.com/saghen/blink.cmp", version = "78336bc" },
 	{ src = "https://github.com/nvim-lua/plenary.nvim", version = "74b06c6" },
 	{ src = "https://github.com/nvim-telescope/telescope.nvim", version = "427b576" },
@@ -36,16 +34,22 @@ local mason_options = require("plugins.configs.mason")
 require("mason").setup(mason_options)
 vim.g.mason_binaries_list = mason_options.ensure_installed
 
-local luasnip = require("luasnip")
-require("luasnip.loaders.from_vscode").lazy_load()
-luasnip.config.set_config({ history = true, updateevents = "TextChanged,TextChangedI" })
-
 vim.keymap.set({ "i", "s" }, "<Tab>", function()
-	return luasnip.expand_or_jumpable() and "<Plug>luasnip-expand-or-jump" or "<Tab>"
+	if vim.snippet.active({ direction = 1 }) then
+		vim.snippet.jump(1)
+		return ""
+	elseif require("snippets").expand() then
+		return ""
+	end
+	return "<Tab>"
 end, { expr = true, silent = true })
 
 vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
-	return luasnip.jumpable(-1) and "<Plug>luasnip-jump-prev" or "<S-Tab>"
+	if vim.snippet.active({ direction = -1 }) then
+		vim.snippet.jump(-1)
+		return ""
+	end
+	return "<S-Tab>"
 end, { expr = true, silent = true })
 
 require("blink.cmp").setup({
@@ -73,7 +77,7 @@ require("blink.cmp").setup({
 		menu = { auto_show = false, border = "rounded", winblend = 0, scrollbar = false },
 	},
 	appearance = { nerd_font_variant = "mono", use_nvim_cmp_as_default = false },
-	sources = { default = { "lsp", "path", "snippets", "buffer" } },
+	sources = { default = { "lsp", "path", "buffer" } },
 	fuzzy = { implementation = "prefer_rust_with_warning" },
 })
 
