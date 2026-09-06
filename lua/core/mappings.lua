@@ -1,4 +1,5 @@
 local map = vim.keymap.set
+local M = {}
 
 map("i", "<C-a>", "<ESC>^i", { desc = "Beginning of line" })
 map("i", "<C-e>", "<End>", { desc = "End of line" })
@@ -35,7 +36,10 @@ end, { desc = "Paste system clipboard" })
 
 map("n", "<C-p>", "<cmd>let @+=expand('%:p')<CR>", { desc = "Copy absolute path of current file" })
 
-map("n", "<leader>n", "<cmd>set nu!<CR>", { desc = "Toggle line number" })
+map("n", "<leader>n", function()
+	vim.wo.number = not vim.wo.number
+	M.gitsigns.set_visible(vim.wo.number)
+end, { desc = "Toggle line number and Git signs" })
 map("n", "<leader>rn", "<cmd>set rnu!<CR>", { desc = "Toggle relative number" })
 
 map("n", "<leader>z", "<cmd>bufdo bd<CR>", { desc = "Dashboard" })
@@ -232,8 +236,6 @@ map("n", "gp", "<cmd>GitConflictPrevConflict<CR>", { desc = "Previous conflict" 
 map("i", "<C-.>", "\\Rightarrow", { desc = "Latex right arrow" })
 map("i", "<C-,>", "\\Leftarrow", { desc = "Latex left arrow" })
 
-local M = {}
-
 M.ufo = {
 	zR = function()
 		require("ufo").openAllFolds()
@@ -280,24 +282,28 @@ M.ibl = {
 	end,
 }
 
-M.gitsigns = {
-	["<leader>g"] = function()
-		if not vim.g.gitsigns_loaded then
-			local loaded, gitsigns = pcall(require, "gitsigns")
-			if not loaded then
-				vim.notify("Failed to load gitsigns.nvim", vim.log.levels.WARN)
-				return
-			end
+M.gitsigns = {}
 
-			gitsigns.setup({
-				signs = {
-					add = { text = "▎" },
-					change = { text = "▎" },
-					delete = { text = "▎" },
-					topdelete = { text = "▎" },
-					changedelete = { text = "▎" },
+function M.gitsigns.set_visible(visible)
+	if not vim.g.gitsigns_loaded then
+		vim.pack.add({
+			{ src = "https://github.com/lewis6991/gitsigns.nvim", version = "eb60cc7" },
+		}, { load = false })
+		local loaded, gitsigns = pcall(require, "gitsigns")
+		if not loaded then
+			vim.notify("Failed to load gitsigns.nvim", vim.log.levels.WARN)
+			return
+		end
+
+		gitsigns.setup({
+			signs = {
+				add = { text = " ▎" },
+				change = { text = " ▎" },
+				delete = { text = " ▎" },
+				topdelete = { text = " ▎" },
+				changedelete = { text = " ▎" },
 				},
-				signcolumn = true,
+				signcolumn = false,
 				numhl = false,
 				linehl = false,
 				current_line_blame = false,
@@ -307,16 +313,16 @@ M.gitsigns = {
 					follow_files = true,
 				},
 				update_debounce = 200,
-			})
+		})
 
-			vim.g.gitsigns_loaded = true
-		else
-			local gitsigns = require("gitsigns")
-			local _ = vim.api.nvim_get_current_buf()
-			local active = gitsigns.toggle_signs()
-			vim.notify("Gitsigns " .. (active and "enabled" or "disabled"))
-		end
-	end,
-}
+		vim.g.gitsigns_loaded = true
+	end
+	return require("gitsigns").toggle_signs(visible)
+end
+
+M.gitsigns["<leader>g"] = function()
+	local active = M.gitsigns.set_visible(not vim.wo.number)
+	vim.notify("Gitsigns " .. (active and "enabled" or "disabled"))
+end
 
 return M

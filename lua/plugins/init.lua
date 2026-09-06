@@ -18,7 +18,6 @@ vim.pack.add({
 	{ src = "https://github.com/oskarnurm/koda.nvim", version = "a7da3ce" },
 	{ src = "https://github.com/norcalli/nvim-colorizer.lua", version = "a065833" },
 	{ src = "https://github.com/folke/flash.nvim", version = "fcea7ff" },
-	{ src = "https://github.com/lewis6991/gitsigns.nvim", version = "eb60cc7" },
 	{ src = "https://github.com/reedes/vim-pencil", version = "6d70438" },
 	{ src = "https://github.com/nativerv/cyrillic.nvim", version = "86186af" },
 	{ src = "https://github.com/saghen/blink.lib", version = "5876dd9" },

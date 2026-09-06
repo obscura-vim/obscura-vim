@@ -27,7 +27,7 @@ opt.ruler = false
 
 opt.shortmess:append("s")
 
-opt.signcolumn = "yes"
+opt.signcolumn = "auto"
 opt.splitbelow = true
 opt.splitright = true
 opt.termguicolors = true
