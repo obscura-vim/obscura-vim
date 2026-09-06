@@ -37,6 +37,12 @@ Leader is `Space`.
 
 The complete keymap is in `lua/core/mappings.lua`.
 
+`ndiff` shows 10 unchanged lines around each change by default. Adjust it with:
+
+```lua
+require("ndiff").setup({ context_lines = 40 })
+```
+
 ## Design
 
 The configuration is intentionally not an IDE distribution. It uses plugins where Neovim has no comparable built-in tool: fuzzy search, snippet sources, external formatting, TeX integration, Markdown preview, Git decorations, and a small set of focused editing aids. Everything else lives in ordinary Lua modules and Neovim's own APIs.

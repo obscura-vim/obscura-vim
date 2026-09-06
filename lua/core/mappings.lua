@@ -20,6 +20,7 @@ map("n", "<S-d>", "<C-e>", { desc = "Scroll down" })
 map("n", "<S-u>", "<C-y>", { desc = "Scroll up" })
 
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "Copy whole file" })
+map("n", "<C-q>", "<cmd>qa<CR>", { desc = "Quit Neovim" })
 map("x", "<C-y>", function()
 	require("code_link").copy_buffer_selection()
 end, { desc = "Copy code link" })

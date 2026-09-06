@@ -1,7 +1,7 @@
 local M = {}
 local state = {}
 local FULL_CONTEXT = 1000000
-local VISIBLE_CONTEXT = 3
+local CONTEXT_LINES = 10
 
 local function is_header(line)
 	return line:match("^diff %-%-git ") or line:match("^diff %-ruN ")
@@ -40,14 +40,14 @@ local function section_name(lines, item, index)
 	return ("diff-%d"):format(index)
 end
 
-local function context_folds(lines)
-	local folds = {}
+local function context_ranges(lines)
+	local ranges = {}
 	local run_start
 	local function finish_run(run_end)
-		if run_start and run_end - run_start + 1 > VISIBLE_CONTEXT * 2 then
-			table.insert(folds, {
-				first = run_start + VISIBLE_CONTEXT,
-				last = run_end - VISIBLE_CONTEXT,
+		if run_start and run_end - run_start + 1 > CONTEXT_LINES * 2 then
+			table.insert(ranges, {
+				first = run_start + CONTEXT_LINES,
+				last = run_end - CONTEXT_LINES,
 			})
 		end
 		run_start = nil
@@ -60,21 +60,62 @@ local function context_folds(lines)
 		end
 	end
 	finish_run(#lines)
-	return folds
+	return ranges
 end
 
-local function configure_folds(lines, enabled)
-	vim.api.nvim_win_call(state.main_window, function()
-		vim.cmd("silent! normal! zE")
-		vim.wo.foldmethod = "manual"
-		vim.wo.foldenable = enabled
-		vim.wo.foldlevel = 0
-		if enabled then
-			for _, fold in ipairs(context_folds(lines)) do
-				vim.cmd(("silent %d,%dfold"):format(fold.first, fold.last))
-			end
+local function hidden_context_line(count)
+	return ("⋯ %d unchanged lines hidden — <Space> to reveal"):format(count)
+end
+
+local function is_patch_metadata(line)
+	return line:match("^diff %-%-git ")
+		or line:match("^index ")
+		or line:match("^%-%-%- ")
+		or line:match("^%+%+%+ ")
+		or line:match("^@@ ")
+		or line:match("^\\ No newline at end of file")
+end
+
+local function content_lines(lines)
+	local result = {}
+	local source_lines = {}
+	for index, line in ipairs(lines) do
+		if not is_patch_metadata(line) then
+			table.insert(result, line)
+			table.insert(source_lines, index)
 		end
-	end)
+	end
+	return result, source_lines
+end
+
+local function display_lines(lines, source_lines)
+	local result = {}
+	local hidden = {}
+	local displayed_sources = {}
+	local cursor = 1
+	for _, range in ipairs(context_ranges(lines)) do
+		vim.list_extend(result, vim.list_slice(lines, cursor, range.first - 1))
+		vim.list_extend(displayed_sources, vim.list_slice(source_lines, cursor, range.first - 1))
+		local index = #result + 1
+		table.insert(result, hidden_context_line(range.last - range.first + 1))
+		table.insert(displayed_sources, false)
+		hidden[index] = { lines = vim.list_slice(lines, range.first, range.last), sources = vim.list_slice(source_lines, range.first, range.last) }
+		cursor = range.last + 1
+	end
+	vim.list_extend(result, vim.list_slice(lines, cursor))
+	vim.list_extend(displayed_sources, vim.list_slice(source_lines, cursor))
+	return result, hidden, displayed_sources
+end
+
+local function configure_diff_highlights()
+	local namespace = vim.api.nvim_create_namespace("ndiff")
+	for _, name in ipairs({ "DiffAdd", "DiffChange", "DiffDelete", "DiffText" }) do
+		local highlight = vim.api.nvim_get_hl(0, { name = name, link = false })
+		vim.api.nvim_set_hl(namespace, name, { fg = highlight.fg, bold = highlight.bold, italic = highlight.italic, underline = highlight.underline })
+	end
+	vim.api.nvim_set_hl(namespace, "NdiffHiddenContext", { link = "Comment" })
+	state.highlight_namespace = namespace
+	vim.api.nvim_win_set_hl_ns(state.main_window, namespace)
 end
 
 local function show_section(item)
@@ -94,13 +135,54 @@ local function show_section(item)
 		filetype = "diff"
 	end
 	vim.bo[state.main].modifiable = true
-	vim.api.nvim_buf_set_lines(state.main, 0, -1, false, lines)
+	local displayed
+	local hidden
+	local displayed_sources
+	if item.plain_content == nil then
+		local content
+		local source_lines
+		content, source_lines = content_lines(lines)
+		displayed, hidden, displayed_sources = display_lines(content, source_lines)
+	else
+		displayed, hidden, displayed_sources = lines, {}, {}
+	end
+	vim.api.nvim_buf_set_lines(state.main, 0, -1, false, displayed)
 	vim.bo[state.main].modifiable = false
 	vim.bo[state.main].modified = false
 	vim.bo[state.main].filetype = filetype
 	state.selected = item
+	state.hidden_context = hidden
+	state.raw_lines = lines
+	state.displayed_sources = displayed_sources
 	vim.api.nvim_set_current_win(state.main_window)
-	configure_folds(lines, item.plain_content == nil)
+	configure_diff_highlights()
+	for line in pairs(hidden) do
+		vim.api.nvim_buf_add_highlight(state.main, state.highlight_namespace, "NdiffHiddenContext", line - 1, 0, -1)
+	end
+end
+
+local function reveal_context()
+	local line = vim.api.nvim_win_get_cursor(state.main_window)[1]
+	local hidden = state.hidden_context and state.hidden_context[line]
+	if not hidden then
+		return
+	end
+	vim.bo[state.main].modifiable = true
+	vim.api.nvim_buf_set_lines(state.main, line - 1, line, false, hidden.lines)
+	vim.bo[state.main].modifiable = false
+	vim.bo[state.main].modified = false
+	local remaining = {}
+	for index, value in pairs(state.hidden_context) do
+		if index > line then
+			remaining[index + #hidden.lines - 1] = value
+		end
+	end
+	local sources = state.displayed_sources
+	table.remove(sources, line)
+	for index, source in ipairs(hidden.sources) do
+		table.insert(sources, line + index - 1, source)
+	end
+	state.hidden_context = remaining
 end
 
 local function add_path(root, item)
@@ -165,8 +247,13 @@ local function copy_code_link()
 		require("code_link").copy_path_selection(state.selected.name, first, last)
 		return
 	end
-	local lines = vim.api.nvim_buf_get_lines(state.main, 0, -1, false)
-	require("code_link").copy_diff_selection(state.selected.name, lines, first, last)
+	local source_first = state.displayed_sources[first]
+	local source_last = state.displayed_sources[last]
+	if not source_first or not source_last then
+		vim.notify("Reveal hidden context before copying it", vim.log.levels.WARN)
+		return
+	end
+	require("code_link").copy_diff_selection(state.selected.name, state.raw_lines, source_first, source_last)
 end
 
 local function toggle_explorer()
@@ -185,6 +272,7 @@ end
 
 M.select_file = select_file
 M.toggle_explorer = toggle_explorer
+M.reveal_context = reveal_context
 
 local function command(args, cwd, accepted)
 	local result = vim.system(args, { cwd = cwd, text = true }):wait()
@@ -441,7 +529,6 @@ local function open_patch(patch, options)
 		vim.notify("ndiff: no changes")
 		return
 	end
-	set_tmux_title()
 	local tree_lines, line_items = create_tree(items)
 	state = { lines = lines, items = items, line_items = line_items }
 	state.main = vim.api.nvim_create_buf(false, true)
@@ -469,6 +556,7 @@ local function open_patch(patch, options)
 	vim.keymap.set("n", "<CR>", select_file, { buffer = state.explorer, silent = true })
 	vim.keymap.set("n", "<C-e>", toggle_explorer, { buffer = state.explorer, silent = true })
 	vim.keymap.set("n", "<C-e>", toggle_explorer, { buffer = state.main, silent = true })
+	vim.keymap.set("n", "<Space>", reveal_context, { buffer = state.main, silent = true, desc = "Reveal hidden diff context" })
 	vim.keymap.set("x", "<C-y>", copy_code_link, { buffer = state.main, silent = true, desc = "Copy code link" })
 
 	show_section(items[1])
@@ -476,6 +564,13 @@ local function open_patch(patch, options)
 		toggle_explorer()
 	end
 	vim.cmd("redraw")
+	vim.schedule(set_tmux_title)
+end
+
+function M.setup(options)
+	if options and options.context_lines then
+		CONTEXT_LINES = math.max(0, math.floor(options.context_lines))
+	end
 end
 
 function M.open(path, options)
