@@ -120,7 +120,7 @@ local function configure_diff_highlights()
 	vim.api.nvim_win_set_hl_ns(state.main_window, namespace)
 end
 
-local function show_section(item)
+local function show_section(item, source)
 	if not item or not vim.api.nvim_buf_is_valid(state.main) then
 		return
 	end
@@ -144,7 +144,11 @@ local function show_section(item)
 		local content
 		local source_lines
 		content, source_lines = content_lines(lines)
-		displayed, hidden, displayed_sources = display_lines(content, source_lines)
+		if source then
+			displayed, hidden, displayed_sources = content, {}, source_lines
+		else
+			displayed, hidden, displayed_sources = display_lines(content, source_lines)
+		end
 	else
 		displayed, hidden, displayed_sources = lines, {}, {}
 	end
@@ -157,10 +161,43 @@ local function show_section(item)
 	state.raw_lines = lines
 	state.displayed_sources = displayed_sources
 	vim.api.nvim_set_current_win(state.main_window)
+	local target = 1
+	if source then
+		if item.plain_content ~= nil then
+			target = source
+		else
+			for index, raw in ipairs(displayed_sources) do
+				if raw == source then
+					target = index
+					break
+				end
+			end
+		end
+	end
+	vim.fn.winrestview({ lnum = target, col = 0, topline = target, leftcol = 0, skipcol = 0 })
 	configure_diff_highlights()
 	for line in pairs(hidden) do
 		vim.api.nvim_buf_add_highlight(state.main, state.highlight_namespace, "NdiffHiddenContext", line - 1, 0, -1)
 	end
+end
+
+local function search_diff(contents)
+	local entries = {}
+	for _, item in ipairs(state.items) do
+		if contents then
+			local lines = item.plain_content ~= nil and vim.split(item.plain_content, "\n", { plain = true })
+				or vim.list_slice(state.lines, item.start, item.finish)
+			for index, line in ipairs(lines) do
+				if item.plain_content ~= nil or not is_patch_metadata(line) then
+					local text = item.plain_content ~= nil and line or line:sub(2)
+					table.insert(entries, { item = item, source = index, text = text })
+				end
+			end
+		else
+			table.insert(entries, { item = item, text = item.name })
+		end
+	end
+	require("ndiff.search").open(entries, contents, show_section)
 end
 
 local function reveal_context()
@@ -485,6 +522,15 @@ local function open_patch(patch, options)
 	vim.keymap.set("n", "<C-e>", toggle_explorer, { buffer = state.main, silent = true })
 	vim.keymap.set("n", "<Space>", reveal_context, { buffer = state.main, silent = true, desc = "Reveal hidden diff context" })
 	vim.keymap.set("x", "<C-y>", copy_code_link, { buffer = state.main, silent = true, desc = "Copy code link" })
+
+	for _, buffer in ipairs({ state.main, state.explorer }) do
+		for _, key in ipairs({ ",ff", ",fF" }) do
+			vim.keymap.set("n", key, function() search_diff(false) end, { buffer = buffer, desc = "Find diff files" })
+		end
+		for _, key in ipairs({ ",fw", ",fW" }) do
+			vim.keymap.set("n", key, function() search_diff(true) end, { buffer = buffer, desc = "Search diff contents" })
+		end
+	end
 
 	show_section(items[1])
 	if not options or options.open_tree ~= false then

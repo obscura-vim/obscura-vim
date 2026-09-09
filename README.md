@@ -43,6 +43,10 @@ The complete keymap is in `lua/core/mappings.lua`.
 require("ndiff").setup({ context_lines = 40 })
 ```
 
+In `ndiff`, selecting a file starts at the top. `,ff` / `,fF` fuzzy-search only the files in the current diff; `,fw` / `,fW` fuzzy-search its contents, including removed lines and hidden context. These shortcuts work in both the diff and file tree. Selecting a content match opens that section with its context expanded and moves to the matching line.
+
+Run the ndiff regression checks with `nvim --headless -u NONE -l tests/ndiff.lua` (Telescope and Plenary must be installed).
+
 ## Design
 
 The configuration is intentionally not an IDE distribution. It uses plugins where Neovim has no comparable built-in tool: fuzzy search, snippet sources, external formatting, TeX integration, Markdown preview, Git decorations, and a small set of focused editing aids. Everything else lives in ordinary Lua modules and Neovim's own APIs.
