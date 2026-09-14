@@ -76,7 +76,7 @@ map("n", ".", ".")
 
 map("n", "<C-n>", "<cmd>b#<CR>", { desc = "Go to previous buffer", noremap = true, silent = true })
 
-map("n", "<leader>rp", "<cmd>!python %<CR>", { desc = "Fast run python file" })
+map("n", "<leader>rp", "<cmd>!python3 %<CR>", { desc = "Fast run python file" })
 map("n", "<leader>rr", "<cmd>RustRun<CR>", { desc = "Fast run rust file" })
 map("n", "<leader>rl", "<cmd>!lua %<CR>", { desc = "Fast run lua file" })
 map("n", "<leader>rg", "<cmd>!go run %<CR>", { desc = "Fast run go file" })
