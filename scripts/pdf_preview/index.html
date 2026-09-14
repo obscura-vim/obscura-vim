@@ -12,7 +12,8 @@
   <header aria-label="PDF controls">
     <div class="controls pageControls">
       <input id="pageNumber" aria-label="Page number" type="number" min="1" value="1" disabled>
-      <span id="pageCount" aria-label="Page count">/ —</span>
+      <span class="pageSeparator" aria-hidden="true">/</span>
+      <span id="pageCount" aria-label="Page count">—</span>
     </div>
     <div class="controls">
       <label class="zoom"><input id="zoom" aria-label="Zoom percent" type="number" min="25" max="500" value="100" disabled><span>%</span></label>

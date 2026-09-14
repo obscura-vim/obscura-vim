@@ -64,8 +64,9 @@ input::-webkit-inner-spin-button, input::-webkit-outer-spin-button { -webkit-app
   white-space: nowrap;
 }
 .pageControls:focus-within, .zoom:focus-within { border-color: #91b8dc; box-shadow: 0 0 0 1px #91b8dc; }
-#pageNumber { width: 22px; flex: 1; }
-#pageCount { padding-right: 2px; color: #bdbdbd; font-size: 12px; flex-shrink: 0; }
+.pageControls { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+#pageNumber, #pageCount { width: 100%; min-width: 0; font: inherit; font-variant-numeric: tabular-nums; text-align: center; }
+.pageSeparator { color: #bdbdbd; }
 #zoom { width: 34px; flex: 1; }
 .zoom span { padding-right: 1px; font-size: 11px; color: #bdbdbd; }
 .zoomButtons {

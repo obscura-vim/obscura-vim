@@ -61,7 +61,7 @@ async function show(data, saved) {
   }
   pageNumber.value = viewer.currentPageNumber;
   pageNumber.max = pdf.numPages;
-  document.querySelector("#pageCount").textContent = `/ ${pdf.numPages}`;
+  document.querySelector("#pageCount").textContent = String(pdf.numPages);
 }
 
 async function load(next) {
