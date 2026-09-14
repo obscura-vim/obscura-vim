@@ -8,7 +8,7 @@ ObscuraVim is a compact Neovim configuration for people who prefer the editor to
 - Git
 - `rg` for project search
 
-Language servers and formatters are managed with Mason. TeX support expects `latexmk`, `nvr`, and Zathura. Markdown Preview requires Node.js and npm.
+Language servers and formatters are managed with Mason. TeX support expects `latexmk`, a TeX distribution, Python 3.9+, Node.js 20.16+ and npm, and a modern browser. Markdown Preview also requires Node.js and npm.
 
 ## Installation
 
@@ -36,6 +36,22 @@ Leader is `Space`.
 - `<leader>b`, `<leader>v` — build and view TeX documents
 
 The complete keymap is in `lua/core/mappings.lua`.
+
+### TeX preview
+
+`<Space>b` (`:VimtexCompile`) starts continuous compilation. The first successful build opens a preview in your default browser. Save a TeX file with `:w` to rebuild; the existing preview updates after successful builds. Press `<Space>b` again to stop compilation. Texlab's separate build-on-save is disabled to avoid duplicate builds.
+
+`<Space>v` (`:VimtexView`) opens the preview manually, including after closing its tab. Browser settings determine which window/profile receives the URL. Configure your preferred browser as the system default.
+
+The preview uses PDF.js and preserves zoom, page number, and scroll position when the PDF changes. Set the zoom percentage in the toolbar, use the +/− buttons, or use Ctrl+wheel/pinch. Fit width follows the window size. If pages are removed, the view moves to the last remaining page.
+
+The local server binds to `127.0.0.1`, serves the selected PDF and viewer assets, and stops when Neovim exits. Failed builds retain the last successful PDF. SyncTeX navigation is not supported. On first use, `npm ci` installs the locked PDF.js dependency under `scripts/pdf_preview/`; this requires internet access. Subsequent previews work offline.
+
+Run the TeX integration check with `nvim --headless -u NONE -l tests/tex_preview.lua` (VimTeX, `latexmk`, `pdflatex`, Python 3, and `curl` required). It compiles a temporary document and intercepts browser opening.
+
+For a configuration installed with individual symlinks, also link `autoload/`, `scripts/`, and `lua/core/tex_preview.lua` into the installed configuration. Run `NVIM_TEX_TEST_RUNTIME="$HOME/.config/nvim" nvim --headless -u NONE -l tests/tex_preview.lua` to check the installed runtime, including these links.
+
+For the browser regression check, run `npm ci --prefix scripts/pdf_preview --ignore-scripts --omit=optional`, then `node tests/tex_preview_browser.mjs`. It uses installed Chrome on macOS; elsewhere set `CHROME_PATH` or install Playwright's Chromium. It verifies zoom and scroll retention with actual PDF recompilation.
 
 `ndiff` shows 10 unchanged lines around each change by default. Adjust it with:
 

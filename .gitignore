@@ -1,1 +1,3 @@
 lazy-lock.json
+scripts/pdf_preview/node_modules/
+__pycache__/

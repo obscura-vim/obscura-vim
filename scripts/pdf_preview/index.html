@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}}</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="pdfjs/web/pdf_viewer.css">
+  <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+  <header aria-label="PDF controls">
+    <div class="controls pageControls">
+      <input id="pageNumber" aria-label="Page number" type="number" min="1" value="1" disabled>
+      <span id="pageCount" aria-label="Page count">/ —</span>
+    </div>
+    <div class="controls">
+      <label class="zoom"><input id="zoom" aria-label="Zoom percent" type="number" min="25" max="500" value="100" disabled><span>%</span></label>
+      <div class="zoomButtons">
+        <button id="zoomOut" aria-label="Zoom out" disabled>−</button>
+        <button id="zoomIn" aria-label="Zoom in" disabled>+</button>
+      </div>
+      <button id="fitWidth" aria-label="Fit width" title="Fit width" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16M20 4v16M5 12h14M8 9l-3 3 3 3M16 9l3 3-3 3"/></svg></button>
+    </div>
+    <a href="document.pdf" download="{{title}}" aria-label="Download PDF" title="Download PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 16v5h14v-5"/></svg></a>
+  </header>
+  <div id="viewerContainer" role="main" aria-label="PDF document" tabindex="0">
+    <div id="viewer" class="pdfViewer"></div>
+  </div>
+  <div id="status" role="status">Loading PDF…</div>
+  <script type="module" src="viewer.mjs"></script>
+</body>
+</html>

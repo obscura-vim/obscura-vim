@@ -12,7 +12,7 @@ M.vimtex = function()
 		out_dir = vim.fn.expand("$HOME/latex/out"),
 		build_dir = vim.fn.expand("$HOME/.cache/latex"),
 		continuous = 1,
-		callback = 0,
+		callback = 1,
 		executable = "latexmk",
 		options = {
 			"-pdf",
@@ -23,8 +23,7 @@ M.vimtex = function()
 		},
 	}
 
-	vim.g.vimtex_compiler_callback_hooks = {}
-	vim.g.vimtex_view_method = "zathura"
+	vim.g.vimtex_view_method = "browser"
 	vim.opt.conceallevel = 1
 	vim.g.tex_conceal = "abdmg"
 end
