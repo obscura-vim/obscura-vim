@@ -3,6 +3,7 @@ local map = require("core.mappings")
 vim.pack.add({
 	{ src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "4916d659" },
 	{ src = "https://github.com/iamcco/markdown-preview.nvim", version = "a923f5f" },
+	{ src = "https://github.com/MeanderingProgrammer/render-markdown.nvim", version = "a778444a" },
 	{ src = "https://github.com/lukas-reineke/indent-blankline.nvim", version = "d28a3f7" },
 	{ src = "https://github.com/williamboman/mason.nvim", version = "2a6940a" },
 	{ src = "https://github.com/saghen/blink.cmp", version = "78336bc" },
@@ -23,6 +24,23 @@ vim.pack.add({
 })
 
 require("plugins.configs.treesitter")
+
+require("render-markdown").setup({
+	file_types = { "markdown" },
+	heading = { enabled = false },
+	paragraph = { enabled = false },
+	code = { enabled = false },
+	dash = { enabled = false },
+	bullet = { enabled = false },
+	checkbox = { enabled = false },
+	quote = { enabled = false },
+	link = { enabled = false },
+	inline_highlight = { enabled = false },
+	latex = { enabled = false },
+	html = { enabled = false },
+	sign = { enabled = false },
+	pipe_table = { enabled = true, style = "full", cell = "padded", wrap = false },
+})
 
 require("ibl").setup({
 	indent = { char = "▏" },

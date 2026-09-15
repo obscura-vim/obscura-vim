@@ -37,6 +37,8 @@ Leader is `Space`.
 
 The complete keymap is in `lua/core/mappings.lua`.
 
+Markdown tables render directly in Neovim with aligned cells and borders using `render-markdown.nvim`. The cursor row reveals the source for editing, and Insert mode shows raw Markdown. Use `:RenderMarkdown toggle` to switch rendering on or off. The `markdown` and `markdown_inline` Treesitter parsers are required (`:TSInstall markdown markdown_inline`).
+
 ### TeX preview
 
 `<Space>b` (`:VimtexCompile`) starts continuous compilation. The first successful build opens a preview in your default browser. Save a TeX file with `:w` to rebuild; the existing preview updates after successful builds. Press `<Space>b` again to stop compilation. Texlab's separate build-on-save is disabled to avoid duplicate builds.

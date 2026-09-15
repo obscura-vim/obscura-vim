@@ -85,6 +85,11 @@
       "src": "https://github.com/kevinhwang91/promise-async",
       "version": "'119e896'"
     },
+    "render-markdown.nvim": {
+      "rev": "a778444a73080301a50c4a6f58c90d7e094dd59e",
+      "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim",
+      "version": "'a778444a'"
+    },
     "telescope.nvim": {
       "rev": "427b576c16792edad01a92b89721d923c19ad60f",
       "src": "https://github.com/nvim-telescope/telescope.nvim",
